@@ -1,5 +1,11 @@
 import { render } from 'solid-js/web';
-
+import { StateController } from './state/StateController';
 import App from './App';
 
-render(() => <App />, document.body);
+render(() => {
+  return (
+    <StateController>
+      <App />
+    </StateController>
+  );
+}, document.body);
