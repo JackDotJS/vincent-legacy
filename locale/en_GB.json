@@ -1,0 +1,17 @@
+{
+  "helloworld": "oi m8",
+  "options": {
+    "title": "oi m8",
+    "categories": {
+      "display": "oi m8",
+      "theme": "oi m8",
+      "controls": "oi m8",
+      "keymapping": "oi m8",
+      "plugins": "oi m8",
+      "language": "oi m8",
+      "system": "oi m8",
+      "debug": "oi m8",
+      "experimental": "oi m8"
+    }
+  }
+}

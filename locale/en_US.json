@@ -1,0 +1,17 @@
+{
+  "helloworld": "Vincent :0!!!!",
+  "options": {
+    "title": "Options",
+    "categories": {
+      "display": "Display",
+      "theme": "Themes",
+      "controls": "Controls",
+      "keymapping": "Key Mapping",
+      "plugins": "Plugins",
+      "language": "Language",
+      "system": "System",
+      "debug": "Debug",
+      "experimental": "Experimental"
+    }
+  }
+}
