@@ -12,11 +12,24 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "path": {
+        "all": true
+      },
+      "fs": {
+        "scope": [
+          "$FONT/*",
+          "$TEMP/vincent/*",
+          "$APPDATA/*"
+        ],
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "exists": true
+      }
     },
     "bundle": {
       "active": true,
-      "category": "DeveloperTool",
+      "category": "GraphicsAndDesign",
       "copyright": "",
       "deb": {
         "depends": []
@@ -29,7 +42,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.jackdotjs.vincent",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -38,7 +51,9 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
+      "resources": [
+        "../locale/*"
+      ],
       "shortDescription": "",
       "targets": "all",
       "windows": {
