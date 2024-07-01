@@ -3,8 +3,9 @@ import { SetStoreFunction, createStore, reconcile } from 'solid-js/store';
 import { BaseDirectory, appDataDir, resolveResource } from "@tauri-apps/api/path";
 import { exists, readTextFile } from "@tauri-apps/api/fs";
 import * as i18n from "@solid-primitives/i18n";
-import defaultConfig from './defaultconfig.json';
-import { wq } from '../util/writequeue';
+import defaultConfig from './defaultConfig.json';
+import { wq } from '../util/writeQueue';
+import { deepMerge } from '../util/deepMerge';
 
 // TODO: unfuck all of this garbage
 
@@ -16,22 +17,33 @@ interface StateExports {
 export const StateContext = createContext<any>();
 
 const fetchDictionary = async (locale: string) => {
+  const defaultDictPath = await resolveResource(`../locale/${defaultConfig.locale}.json`);
+  const defaultDictionary = (await import(defaultDictPath)).default;
+
   const newDictPath = await resolveResource(`../locale/${locale}.json`);
   const newDictionary = (await import(newDictPath)).default;
-  const flattened = i18n.flatten(newDictionary);
+
+  const mergedDictionaries = deepMerge(defaultDictionary, newDictionary);
+
+  const flattened = i18n.flatten(mergedDictionaries);
 
   return flattened;
 };
 
 export const StateController = (props: { children?: JSXElement }) => {
+  // we need to clone this because otherwise it turns out
+  // modifications to the store change the imported config
+  // itself for whatever fuckign reason??????????????
+  const clonedDefaultCfg = structuredClone(defaultConfig);
+
   const [loaded, setLoaded] = createSignal(false);
-  const [config, setConfig] = createStore(defaultConfig);
+  const [config, setConfig] = createStore(clonedDefaultCfg);
   const [state, setState] = createStore({});
 
   const [ dictionary ] = createResource(() => config.locale, fetchDictionary);
   
   onMount(async () => {
-    let cfgFinal = defaultConfig;
+    let cfgFinal = clonedDefaultCfg;
 
     const appdata = await appDataDir();
     const cfgExists = await exists(`${appdata}/config.json`);

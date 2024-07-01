@@ -10,7 +10,7 @@ const App = () => {
   return (
     <>
       <h1>{t(`helloworld`)}</h1>
-      <button>(TODO) open settings window</button>
+      <button>{t(`options.title`)}</button>
       <button onClick={() => setConfig(`locale`, `en_US`)}>set language en_US</button>
       <button onClick={() => setConfig(`locale`, `en_GB`)}>set language en_GB</button>
     </>
