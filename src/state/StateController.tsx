@@ -1,9 +1,10 @@
-import { JSXElement, Show, createContext, createEffect, createResource, createSignal, onMount } from "solid-js";
+import { JSXElement, Show, createContext, createResource, createSignal, onMount } from "solid-js";
 import { SetStoreFunction, createStore, reconcile } from 'solid-js/store';
 import { BaseDirectory, appDataDir, resolveResource } from "@tauri-apps/api/path";
-import { fs } from "@tauri-apps/api";
+import { exists, readTextFile } from "@tauri-apps/api/fs";
 import * as i18n from "@solid-primitives/i18n";
 import defaultConfig from './defaultconfig.json';
+import { wq } from '../util/writequeue';
 
 // TODO: unfuck all of this garbage
 
@@ -33,15 +34,15 @@ export const StateController = (props: { children?: JSXElement }) => {
     let cfgFinal = defaultConfig;
 
     const appdata = await appDataDir();
-    const cfgExists = await fs.exists(`${appdata}/config.json`);
+    const cfgExists = await exists(`${appdata}/config.json`);
 
     if (cfgExists) {
-      const config = await fs.readTextFile(`config.json`, { dir: BaseDirectory.AppData });
+      const config = await readTextFile(`config.json`, { dir: BaseDirectory.AppData });
       const cfgjson = JSON.parse(config);
 
       cfgFinal = cfgjson;
     } else {
-      await fs.writeTextFile(`config.json`, JSON.stringify(defaultConfig), { dir: BaseDirectory.AppData });
+      wq.add(`config.json`, JSON.stringify(defaultConfig), { dir: BaseDirectory.AppData });
     }
 
     setConfig(reconcile(cfgFinal));
