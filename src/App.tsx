@@ -1,9 +1,9 @@
-import { createEffect, onMount, useContext } from 'solid-js';
+import { useContext } from 'solid-js';
 import { StateContext } from './state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 
 const App = () => {
-  const { state, setState, config, setConfig, dictionary } = useContext(StateContext);
+  const { setConfig, dictionary } = useContext(StateContext);
 
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
 

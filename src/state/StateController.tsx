@@ -1,5 +1,5 @@
 import { JSXElement, Show, createContext, createResource, createSignal, onMount } from "solid-js";
-import { SetStoreFunction, createStore, reconcile } from 'solid-js/store';
+import { createStore, reconcile } from 'solid-js/store';
 import { BaseDirectory, appDataDir, resolveResource } from "@tauri-apps/api/path";
 import { exists, readTextFile } from "@tauri-apps/api/fs";
 import * as i18n from "@solid-primitives/i18n";
@@ -9,10 +9,10 @@ import { deepMerge } from '../util/deepMerge';
 
 // TODO: unfuck all of this garbage
 
-interface StateExports {
-  state: any,
-  setState: SetStoreFunction<any>
-}
+// interface StateExports {
+//   state: any,
+//   setState: SetStoreFunction<any>
+// }
 
 export const StateContext = createContext<any>();
 
@@ -38,7 +38,9 @@ export const StateController = (props: { children?: JSXElement }) => {
 
   const [loaded, setLoaded] = createSignal(false);
   const [config, setConfig] = createStore(clonedDefaultCfg);
-  const [state, setState] = createStore({});
+  const [state, setState] = createStore({
+    optionsOpen: false,
+  });
 
   const [ dictionary ] = createResource(() => config.locale, fetchDictionary);
   
