@@ -1,0 +1,78 @@
+name: Snapshot Builds
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  build-snapshot:
+    strategy:
+      matrix:
+        # using ubuntu 18.04 for compatibility reasons
+        # see: https://tauri.app/v1/guides/building/linux
+        os: [windows-latest, ubuntu-18.04]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Get Revision Hash (Linux/Bash)
+        if: matrix.os == 'ubuntu-18.04'
+        run: echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      
+      - name: Get Revision Hash (Windows/Powershell)
+        if: matrix.os == 'windows-latest'
+        run: echo "SHA_SHORT=$(git rev-parse --short HEAD)" | Add-Content -Path $env:GITHUB_ENV
+
+      - name: Install Tauri Dependencies (Linux)
+        if: matrix.platform == 'ubuntu-18.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev librsvg2-dev
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+      
+      - name: Set Up PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: ^8.9.0
+
+      - name: Set Up Node.JS Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install Dependencies from NPM
+        run: pnpm i
+
+      - name: Compile Application
+        run: pnpm tauri build
+      
+      - name: Upload .Msi Snapshot (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: SNAPSHOT-${{ env.SHA_SHORT }}-vincent-windows-x64
+          path: src-tauri/target/release/bundle/msi
+      
+      - name: Upload .AppImage Snapshot (Linux)
+        if: matrix.os == 'ubuntu-18.04'
+        uses: actions/upload-artifact@v3
+        with:
+          name: SNAPSHOT-${{ env.SHA_SHORT }}-vincent-linux-appimage-x64
+          path: src-tauri/target/release/bundle/appimage
+      
+      - name: Upload .Deb Snapshot (Linux)
+        if: matrix.os == 'ubuntu-18.04'
+        uses: actions/upload-artifact@v3
+        with:
+          name: SNAPSHOT-${{ env.SHA_SHORT }}-vincent-linux-deb-x64
+          path: src-tauri/target/release/bundle/deb
