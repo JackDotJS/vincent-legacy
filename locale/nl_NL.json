@@ -1,0 +1,16 @@
+{
+    "helloworld": "Hallo wereld",
+    "options": {
+      "categories": {
+        "display": "Weergave",
+        "theme": "Thema",
+        "controls": "Bediening",
+        "keymapping": "Sneltoetsen",
+        "plugins": "Plugins",
+        "language": "Taal",
+        "system": "Systeem",
+        "debug": "Foutopsporing",
+        "experimental": "Experimenteel"
+      }
+    }
+  }
