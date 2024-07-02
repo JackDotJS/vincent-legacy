@@ -19,6 +19,9 @@ devDependencies:
   '@tauri-apps/cli':
     specifier: ^1.5.11
     version: 1.5.14
+  '@types/node':
+    specifier: ^20.14.9
+    version: 20.14.9
   '@typescript-eslint/eslint-plugin':
     specifier: ^5.62.0
     version: 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.57.0)(typescript@4.9.5)
@@ -36,7 +39,7 @@ devDependencies:
     version: 4.9.5
   vite:
     specifier: ^3.2.10
-    version: 3.2.10
+    version: 3.2.10(@types/node@20.14.9)
   vite-plugin-solid:
     specifier: ^2.10.2
     version: 2.10.2(solid-js@1.8.17)(vite@3.2.10)
@@ -542,6 +545,12 @@ packages:
 
   /@types/json-schema@7.0.15:
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+    dev: true
+
+  /@types/node@20.14.9:
+    resolution: {integrity: sha512-06OCtnTXtWOZBJlRApleWndH4JsRVs1pDCc8dLSQp+7PpUpX3ePdHyeNSFTeSe7FtKyQkrlPvHwJOW3SLd8Oyg==}
+    dependencies:
+      undici-types: 5.26.5
     dev: true
 
   /@types/semver@7.5.8:
@@ -1964,6 +1973,10 @@ packages:
     hasBin: true
     dev: true
 
+  /undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+    dev: true
+
   /update-browserslist-db@1.0.16(browserslist@4.23.0):
     resolution: {integrity: sha512-KVbTxlBYlckhF5wgfyZXTWnMn7MMZjMu9XG8bPlliUOP9ThaF4QnhP8qrjrH7DRzHfSk0oQv1wToW+iA5GajEQ==}
     hasBin: true
@@ -2001,13 +2014,13 @@ packages:
       merge-anything: 5.1.7
       solid-js: 1.8.17
       solid-refresh: 0.6.3(solid-js@1.8.17)
-      vite: 3.2.10
+      vite: 3.2.10(@types/node@20.14.9)
       vitefu: 0.2.5(vite@3.2.10)
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /vite@3.2.10:
+  /vite@3.2.10(@types/node@20.14.9):
     resolution: {integrity: sha512-Dx3olBo/ODNiMVk/cA5Yft9Ws+snLOXrhLtrI3F4XLt4syz2Yg8fayZMWScPKoz12v5BUv7VEmQHnsfpY80fYw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -2032,6 +2045,7 @@ packages:
       terser:
         optional: true
     dependencies:
+      '@types/node': 20.14.9
       esbuild: 0.15.18
       postcss: 8.4.38
       resolve: 1.22.8
@@ -2048,7 +2062,7 @@ packages:
       vite:
         optional: true
     dependencies:
-      vite: 3.2.10
+      vite: 3.2.10(@types/node@20.14.9)
     dev: true
 
   /which@2.0.2:
