@@ -7,6 +7,7 @@ on:
 jobs:
   build-snapshot:
     strategy:
+      fail-fast: false
       matrix:
         # using oldest available version of ubuntu for compatibility reasons
         # see: https://tauri.app/v1/guides/building/linux
