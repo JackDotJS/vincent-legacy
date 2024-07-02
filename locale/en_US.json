@@ -1,5 +1,8 @@
 {
   "helloworld": "Vincent :0!!!!",
+  "generic": {
+    "close": "Close"
+  },
   "options": {
     "title": "Options",
     "categories": {

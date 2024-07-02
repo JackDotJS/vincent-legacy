@@ -1,0 +1,26 @@
+.optionsWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background-color: grey;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.1);
+  transition-duration: 150ms;
+  transition-property: opacity, transform;
+  transition-timing-function: ease-in-out;
+}
+
+.optionsWrapper.visible {
+  opacity: 1;
+  pointer-events: initial;
+  transform: scale(1);
+}
