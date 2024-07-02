@@ -67,23 +67,23 @@ jobs:
       - name: Compile Application
         run: pnpm tauri build
       
-      - name: Upload .Msi Snapshot (Windows)
+      - name: Upload .msi Snapshot (Windows)
         if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SNAPSHOT-${{ env.SHA_SHORT }}-vincent-windows-x64
           path: src-tauri/target/release/bundle/msi
       
       - name: Upload .AppImage Snapshot (Linux)
         if: matrix.os == 'ubuntu-20.04'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SNAPSHOT-${{ env.SHA_SHORT }}-vincent-linux-appimage-x64
           path: src-tauri/target/release/bundle/appimage
       
-      - name: Upload .Deb Snapshot (Linux)
+      - name: Upload .deb Snapshot (Linux)
         if: matrix.os == 'ubuntu-20.04'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SNAPSHOT-${{ env.SHA_SHORT }}-vincent-linux-deb-x64
           path: src-tauri/target/release/bundle/deb
