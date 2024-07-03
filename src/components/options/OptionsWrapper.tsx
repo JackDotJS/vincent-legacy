@@ -1,24 +1,16 @@
-import { For, createEffect, createSignal, useContext } from 'solid-js';
+import { Match, Switch, createSignal, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 import style from './OptionsWrapper.module.css';
 
+import CategoryLanguage from './CategoryLanguage';
+
 const OptionsWrapper = () => {
-  const { config, state, setState, setConfig, dictionary, langs } = useContext(StateContext);
+  const { state, setState, dictionary } = useContext(StateContext);
 
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
 
-  const langNameGetter = () => {
-    return new Intl.DisplayNames([config.locale.replace(`_`, `-`)], {
-      type: `language`
-    });
-  };
-
-  const [langName, setLangNameGetter] = createSignal(langNameGetter());
-
-  createEffect(() => {
-    setLangNameGetter(langNameGetter());
-  });
+  const [selectedCategory, setSelectedCategory] = createSignal(`display`);
 
   return (
     <div class={style.optionsWrapper} classList={{ [style.visible]: state.optionsOpen }}>
@@ -27,15 +19,33 @@ const OptionsWrapper = () => {
           <div class={style.sidebar}>
             <h1>{t(`options.title`)}</h1>
             <div class={style.categories}>
-              <button>{t(`options.categories.display`)}</button>
-              <button>{t(`options.categories.theme`)}</button>
-              <button>{t(`options.categories.controls`)}</button>
-              <button>{t(`options.categories.keymapping`)}</button>
-              <button>{t(`options.categories.plugins`)}</button>
-              <button>{t(`options.categories.language`)}</button>
-              <button>{t(`options.categories.system`)}</button>
-              <button>{t(`options.categories.debug`)}</button>
-              <button>{t(`options.categories.experimental`)}</button>
+              <button onClick={() => setSelectedCategory(`display`)}>
+                {t(`options.categories.display`)}
+              </button>
+              <button onClick={() => setSelectedCategory(`theme`)}>
+                {t(`options.categories.theme`)}
+              </button>
+              <button onClick={() => setSelectedCategory(`controls`)}>
+                {t(`options.categories.controls`)}
+              </button>
+              <button onClick={() => setSelectedCategory(`keymapping`)}>
+                {t(`options.categories.keymapping`)}
+              </button>
+              <button onClick={() => setSelectedCategory(`plugins`)}>
+                {t(`options.categories.plugins`)}
+              </button>
+              <button onClick={() => setSelectedCategory(`language`)}>
+                {t(`options.categories.language`)}
+              </button>
+              <button onClick={() => setSelectedCategory(`system`)}>
+                {t(`options.categories.system`)}
+              </button>
+              <button onClick={() => setSelectedCategory(`debug`)}>
+                {t(`options.categories.debug`)}
+              </button>
+              <button onClick={() => setSelectedCategory(`experimental`)}>
+                {t(`options.categories.experimental`)}
+              </button>
             </div>
           </div>
         </div>
@@ -44,25 +54,11 @@ const OptionsWrapper = () => {
       <div class={style.optionsContentWrapper}>
         <div class={style.optionsContentSeparator}>
           <div class={style.optionsContent}>
-            {/* TODO: need apply/save function for config changes */}
-            <select onChange={(e) => setConfig(`locale`, e.target.value)}>
-              <For each={langs()}>
-                {(item) => {
-                  const langCode = item.name.split(`.`)[0];
-                  const langCodeFixed = langCode.replace(`_`, `-`);
-
-                  if (langCode === config.locale) {
-                    return (
-                      <option value={langCode} selected>{langName().of(langCodeFixed)}</option>
-                    );
-                  } else {
-                    return (
-                      <option value={langCode}>{langName().of(langCodeFixed)}</option>
-                    );
-                  }
-                }}
-              </For>
-            </select>
+            <Switch>
+              <Match when={selectedCategory() === `language`}>
+                <CategoryLanguage />
+              </Match>
+            </Switch>
           </div>
           <div class={style.optionsCloseWrapper}>
             <button onClick={() => setState(`optionsOpen`, false) }>{t(`generic.close`)}</button>
