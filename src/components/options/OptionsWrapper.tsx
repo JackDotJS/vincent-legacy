@@ -43,9 +43,16 @@ const OptionsWrapper = () => {
                 {(item) => {
                   const langCode = item.name.split(`.`)[0];
                   const langCodeFixed = langCode.replace(`_`, `-`);
-                  return (
-                    <option value={langCode}>{langName.of(langCodeFixed)}</option>
-                  )
+
+                  if (langCode === config.locale) {
+                    return (
+                      <option value={langCode} selected>{langName.of(langCodeFixed)}</option>
+                    );
+                  } else {
+                    return (
+                      <option value={langCode}>{langName.of(langCodeFixed)}</option>
+                    );
+                  }
                 }}
               </For>
             </select>
