@@ -1,6 +1,6 @@
 import { For, createEffect, createSignal, onMount, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
-import style from './CategoryLanguage.module.css'
+import style from './CategoryLanguage.module.css';
 
 const CategoryLanguage = () => {
   const { config, setConfig, langs } = useContext(StateContext);
@@ -39,9 +39,10 @@ const CategoryLanguage = () => {
           elem.style.display = ``;
         }
       }
-    }
+    };
 
     searchInput.addEventListener(`input`, updateSearch);
+    searchInput.addEventListener(`change`, updateSearch);
 
     // UX: auto-focus on search text box when this category is opened
     searchInput.focus();
