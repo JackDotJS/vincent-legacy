@@ -1,4 +1,4 @@
-import { For, useContext } from 'solid-js';
+import { For, createEffect, createSignal, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 import style from './OptionsWrapper.module.css';
@@ -8,8 +8,16 @@ const OptionsWrapper = () => {
 
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
 
-  const langName = new Intl.DisplayNames([config.locale.replace(`_`, `-`)], {
-    type: `language`
+  const langNameGetter = () => {
+    return new Intl.DisplayNames([config.locale.replace(`_`, `-`)], {
+      type: `language`
+    });
+  };
+
+  const [langName, setLangNameGetter] = createSignal(langNameGetter());
+
+  createEffect(() => {
+    setLangNameGetter(langNameGetter());
   });
 
   return (
@@ -36,8 +44,7 @@ const OptionsWrapper = () => {
       <div class={style.optionsContentWrapper}>
         <div class={style.optionsContentSeparator}>
           <div class={style.optionsContent}>
-            {/* <button onClick={() => setConfig(`locale`, `en_US`)}>set language en_US</button>
-            <button onClick={() => setConfig(`locale`, `en_GB`)}>set language en_GB</button> */}
+            {/* TODO: need apply/save function for config changes */}
             <select onChange={(e) => setConfig(`locale`, e.target.value)}>
               <For each={langs()}>
                 {(item) => {
@@ -46,11 +53,11 @@ const OptionsWrapper = () => {
 
                   if (langCode === config.locale) {
                     return (
-                      <option value={langCode} selected>{langName.of(langCodeFixed)}</option>
+                      <option value={langCode} selected>{langName().of(langCodeFixed)}</option>
                     );
                   } else {
                     return (
-                      <option value={langCode}>{langName.of(langCodeFixed)}</option>
+                      <option value={langCode}>{langName().of(langCodeFixed)}</option>
                     );
                   }
                 }}
