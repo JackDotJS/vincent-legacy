@@ -83,9 +83,9 @@
   width: var(--content-width);
 }
 
-.optionsCloseWrapper {
+/* .optionsCloseWrapper {
   margin-left: auto;
-}
+} */
 
 .optionsCloseWrapper > button {
   position: sticky;
@@ -93,5 +93,8 @@
 }
 
 .optionsContent {
-  padding-bottom: 100rem;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
 }

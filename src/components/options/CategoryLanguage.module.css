@@ -1,0 +1,4 @@
+.langList {
+  display: flex;
+  flex-direction: column;
+}

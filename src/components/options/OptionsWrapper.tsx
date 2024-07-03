@@ -54,7 +54,7 @@ const OptionsWrapper = () => {
       <div class={style.optionsContentWrapper}>
         <div class={style.optionsContentSeparator}>
           <div class={style.optionsContent}>
-            <Switch>
+            <Switch fallback={<div>category not yet defined: {selectedCategory()}</div>}>
               <Match when={selectedCategory() === `language`}>
                 <CategoryLanguage />
               </Match>
