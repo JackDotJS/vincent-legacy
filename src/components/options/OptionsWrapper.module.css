@@ -1,13 +1,15 @@
 .optionsWrapper {
+  --menu-width: 48rem;
+  --sidebar-width: 10rem;
+  --content-width: calc(var(--menu-width) - var(--sidebar-width));
+
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
   width: 100vw;
-  background-color: grey;
-  padding: 1rem;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
 
@@ -19,8 +21,77 @@
   transition-timing-function: ease-in-out;
 }
 
+/* debug box */
+
+/* .optionsWrapper:after {
+  content: '';
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: var(--menu-width);
+  height: 100vh;
+  z-index: 99999;
+  transform: translateX(-50%);
+  border: 1px solid magenta;
+  pointer-events: none;
+} */
+
 .optionsWrapper.visible {
   opacity: 1;
   pointer-events: initial;
   transform: scale(1);
+}
+
+.sidebarWrapper {
+  display: flex;
+  height: 100%;
+  flex: 1 0 var(--sidebar-width);
+  background-color: gray;
+}
+
+.sidebarScroller {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
+  flex: 1 0 auto
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-width);
+}
+
+.categories {
+  display: flex;
+  flex-direction: column;
+}
+
+.optionsContentWrapper {
+  display: flex;
+  align-items: flex-start;
+  height: 100%;
+  flex: 1 1 var(--content-width);
+  background-color: var(--main-bg);
+  overflow-y: scroll;
+}
+
+.optionsContentSeparator {
+  display: flex;
+  width: var(--content-width);
+}
+
+.optionsCloseWrapper {
+  margin-left: auto;
+}
+
+.optionsCloseWrapper > button {
+  position: sticky;
+  top: 0px;
+}
+
+.optionsContent {
+  padding-bottom: 100rem;
 }

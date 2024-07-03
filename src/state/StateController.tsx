@@ -1,7 +1,7 @@
 import { JSXElement, Show, createContext, createResource, createSignal, onMount } from "solid-js";
 import { createStore, reconcile } from 'solid-js/store';
-import { BaseDirectory, appDataDir, resolveResource } from "@tauri-apps/api/path";
-import { exists, readTextFile } from "@tauri-apps/api/fs";
+import { BaseDirectory, appDataDir, resolveResource} from "@tauri-apps/api/path";
+import { exists, readTextFile, readDir, FileEntry } from "@tauri-apps/api/fs";
 import * as i18n from "@solid-primitives/i18n";
 import defaultConfig from './defaultConfig.json';
 import { wq } from '../util/writeQueue';
@@ -17,10 +17,10 @@ import { deepMerge } from '../util/deepMerge';
 export const StateContext = createContext<any>();
 
 const fetchDictionary = async (locale: string) => {
-  const defaultDictPath = await resolveResource(`../locale/${defaultConfig.locale}.json`);
+  const defaultDictPath = await resolveResource(`locale/${defaultConfig.locale}.json`);
   const defaultDictionary = (await import(defaultDictPath)).default;
 
-  const newDictPath = await resolveResource(`../locale/${locale}.json`);
+  const newDictPath = await resolveResource(`locale/${locale}.json`);
   const newDictionary = (await import(newDictPath)).default;
 
   const mergedDictionaries = deepMerge(defaultDictionary, newDictionary);
@@ -42,6 +42,8 @@ export const StateController = (props: { children?: JSXElement }) => {
     optionsOpen: false,
   });
 
+  const [langs, setLangs] = createSignal<FileEntry[]>([]);
+
   const [ dictionary ] = createResource(() => config.locale, fetchDictionary);
   
   onMount(async () => {
@@ -59,6 +61,10 @@ export const StateController = (props: { children?: JSXElement }) => {
       wq.add(`config.json`, JSON.stringify(defaultConfig), { dir: BaseDirectory.AppData });
     }
 
+    const localeDir = await readDir(`locale`, { dir: BaseDirectory.Resource });
+
+    setLangs(localeDir);
+
     setConfig(reconcile(cfgFinal));
     setLoaded(true);
   });
@@ -68,7 +74,8 @@ export const StateController = (props: { children?: JSXElement }) => {
     setState,
     config,
     setConfig,
-    dictionary
+    dictionary,
+    langs,
   };
 
   return (
