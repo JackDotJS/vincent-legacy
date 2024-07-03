@@ -19,7 +19,8 @@
         "scope": [
           "$FONT/*",
           "$TEMP/vincent/*",
-          "$APPDATA/*"
+          "$APPDATA/*",
+          "$RESOURCE/*"
         ],
         "readFile": true,
         "writeFile": true,
