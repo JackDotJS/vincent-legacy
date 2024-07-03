@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "vincent",
+    "productName": "Vincent",
     "version": "0.1.0"
   },
   "tauri": {
@@ -42,7 +42,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.jackdotjs.vincent",
+      "identifier": "com.jackdotjs.Vincent",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -52,7 +52,7 @@
         "signingIdentity": null
       },
       "resources": [
-        "../locale/*"
+        "locale/*"
       ],
       "shortDescription": "",
       "targets": "all",
@@ -71,10 +71,12 @@
     "windows": [
       {
         "fullscreen": false,
+        "width": 1100,
+        "minWidth": 800,
         "height": 600,
+        "minHeight": 500,
         "resizable": true,
-        "title": "Vincent",
-        "width": 800
+        "title": "Vincent"
       }
     ]
   }
