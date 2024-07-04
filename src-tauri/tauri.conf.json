@@ -53,7 +53,9 @@
         "signingIdentity": null
       },
       "resources": [
-        "locale/*"
+        "locale/*",
+        "keymaps/*",
+        "themes/*"
       ],
       "shortDescription": "",
       "targets": "all",

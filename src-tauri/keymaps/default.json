@@ -1,0 +1,28 @@
+{
+  "generic": {
+    "cut": {
+      "enabled": true,
+      "keybinds": [ "CTRL+X" ]
+    },
+    "copy": {
+      "enabled": true,
+      "keybinds": [ "CTRL+C" ]
+    },
+    "paste": {
+      "enabled": true,
+      "keybinds": [ "CTRL+V" ]
+    },
+    "undo": {
+      "enabled": true,
+      "keybinds": [ "CTRL+Z" ]
+    },
+    "redo": {
+      "enabled": true,
+      "keybinds": [ "CTRL+Y", "CTRL+SHIFT+Z" ]
+    },
+    "selectAll": {
+      "enabled": true,
+      "keybinds": [ "CTRL+A" ]
+    }
+  }
+}
