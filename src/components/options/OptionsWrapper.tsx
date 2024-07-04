@@ -22,11 +22,11 @@ const OptionsWrapper = () => {
               <button onClick={() => setSelectedCategory(`display`)}>
                 {t(`options.categories.display`)}
               </button>
-              <button onClick={() => setSelectedCategory(`theme`)}>
-                {t(`options.categories.theme`)}
-              </button>
               <button onClick={() => setSelectedCategory(`input`)}>
                 {t(`options.categories.input`)}
+              </button>
+              <button onClick={() => setSelectedCategory(`theme`)}>
+                {t(`options.categories.theme`)}
               </button>
               <button onClick={() => setSelectedCategory(`plugins`)}>
                 {t(`options.categories.plugins`)}
