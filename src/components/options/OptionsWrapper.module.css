@@ -55,13 +55,14 @@
   flex-direction: row;
   justify-content: flex-end;
   align-items: flex-start;
-  flex: 1 0 auto
+  flex: 1 0 auto;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: var(--sidebar-width);
+  width: calc(var(--sidebar-width) - 1rem);
+  margin-right: 1rem;
 }
 
 .categories {
@@ -90,6 +91,9 @@
 .optionsCloseWrapper > button {
   position: sticky;
   top: 0px;
+  aspect-ratio: 1;
+  margin: 1rem;
+  margin-left: 0;
 }
 
 .optionsContent {

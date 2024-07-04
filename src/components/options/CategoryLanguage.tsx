@@ -58,18 +58,24 @@ const CategoryLanguage = () => {
             const langCode = item.name.split(`.`)[0];
             const langCodeFixed = langCode.replace(`_`, `-`);
 
+            const nativeLangName = new Intl.DisplayNames([langCodeFixed], {
+              type: `language`
+            });
+
             if (langCode === config.locale) {
               return (
-                <label>
+                <label class={style.langListItem}>
                   <input type="radio" name="lang" value={langCode} checked onChange={(e) => setConfig(`locale`, e.target.value)}/>
-                  {langName().of(langCodeFixed)}
+                  <span>{nativeLangName.of(langCodeFixed)}</span>
+                  <span class={style.langNameTranslated}>{langName().of(langCodeFixed)}</span>
                 </label>
               );
             } else {
               return (
-                <label>
+                <label class={style.langListItem}>
                   <input type="radio" name="lang" value={langCode} onChange={(e) => setConfig(`locale`, e.target.value)} />
-                  {langName().of(langCodeFixed)}
+                  <span>{nativeLangName.of(langCodeFixed)}</span>
+                  <span class={style.langNameTranslated}>{langName().of(langCodeFixed)}</span>
                 </label>
               );
             }
