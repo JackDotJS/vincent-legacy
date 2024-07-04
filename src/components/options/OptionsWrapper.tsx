@@ -1,16 +1,56 @@
-import { Match, Switch, createSignal, useContext } from 'solid-js';
+import { Match, Switch, createEffect, createSignal, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
+import { createStore, reconcile, unwrap } from 'solid-js/store';
 import style from './OptionsWrapper.module.css';
 
 import CategoryLanguage from './CategoryLanguage';
 
 const OptionsWrapper = () => {
-  const { state, setState, dictionary } = useContext(StateContext);
+  const { config, setConfig, state, setState, dictionary } = useContext(StateContext);
 
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
 
+  const [newConfig, setNewConfig] = createStore(structuredClone(unwrap(config)));
+
+  let saveButton!: HTMLButtonElement;
+  let discardButton!: HTMLButtonElement;
+
   const [selectedCategory, setSelectedCategory] = createSignal(`display`);
+
+  const applyConfig = () => {
+    setConfig(reconcile(unwrap(newConfig)));
+    console.debug(`new config applied`);
+  };
+
+  const discardConfig = () => {
+    setNewConfig(reconcile(structuredClone(unwrap(config))));
+    console.debug(`new config discarded`);
+  };
+
+  const deepCompare = (a: any, b: any): boolean => {
+    if (a == null || b == null) return false;
+
+    const equalKeyLength: boolean = (Object.keys(a).length === Object.keys(b).length);
+    let recursiveCompare: boolean;
+
+    if (typeof a === `object` && typeof b === `object`) {
+      recursiveCompare = Object.keys(a).every((key: string) => {
+        return deepCompare(a[key], b[key]);
+      });
+    } else {
+      recursiveCompare = (a === b);
+    }
+    
+    return (equalKeyLength && recursiveCompare);
+  };
+
+  createEffect(() => {
+    const configsEqual = deepCompare(config, newConfig);
+
+    saveButton.disabled = configsEqual;
+    discardButton.disabled = configsEqual;
+  });
 
   return (
     <div class={style.optionsWrapper} classList={{ [style.visible]: state.optionsOpen }}>
@@ -48,10 +88,10 @@ const OptionsWrapper = () => {
                 placeholder
               </button>
 
-              <button disabled>
+              <button ref={saveButton} onClick={() => applyConfig()} disabled>
                 {t(`options.save`)}
               </button>
-              <button disabled>
+              <button ref={discardButton} onClick={() => discardConfig()} disabled>
                 {t(`options.discard`)}
               </button>
             </div>
@@ -64,7 +104,7 @@ const OptionsWrapper = () => {
           <div class={style.optionsContent}>
             <Switch fallback={<div>category not yet defined: {selectedCategory()}</div>}>
               <Match when={selectedCategory() === `language`}>
-                <CategoryLanguage />
+                <CategoryLanguage newConfig={newConfig} setNewConfig={setNewConfig} />
               </Match>
             </Switch>
           </div>
