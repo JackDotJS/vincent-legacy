@@ -25,11 +25,8 @@ const OptionsWrapper = () => {
               <button onClick={() => setSelectedCategory(`theme`)}>
                 {t(`options.categories.theme`)}
               </button>
-              <button onClick={() => setSelectedCategory(`controls`)}>
-                {t(`options.categories.controls`)}
-              </button>
-              <button onClick={() => setSelectedCategory(`keymapping`)}>
-                {t(`options.categories.keymapping`)}
+              <button onClick={() => setSelectedCategory(`input`)}>
+                {t(`options.categories.input`)}
               </button>
               <button onClick={() => setSelectedCategory(`plugins`)}>
                 {t(`options.categories.plugins`)}
@@ -45,6 +42,17 @@ const OptionsWrapper = () => {
               </button>
               <button onClick={() => setSelectedCategory(`experimental`)}>
                 {t(`options.categories.experimental`)}
+              </button>
+
+              <button class={style.buttonDivider}>
+                placeholder
+              </button>
+
+              <button disabled>
+                {t(`options.save`)}
+              </button>
+              <button disabled>
+                {t(`options.discard`)}
               </button>
             </div>
           </div>

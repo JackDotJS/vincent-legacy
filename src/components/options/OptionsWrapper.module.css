@@ -63,11 +63,23 @@
   flex-direction: column;
   width: calc(var(--sidebar-width) - 1rem);
   margin-right: 1rem;
+  height: 100%;
 }
 
 .categories {
   display: flex;
   flex-direction: column;
+  flex: 1 0 auto;
+  margin-bottom: 1rem;
+}
+
+.categories > button:not(:last-child) {
+  margin-bottom: 0.25rem;
+}
+
+.buttonDivider {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .optionsContentWrapper {
