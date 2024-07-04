@@ -1,9 +1,12 @@
 import { For, createEffect, createSignal, onMount, useContext } from 'solid-js';
+import * as i18n from '@solid-primitives/i18n';
 import { StateContext } from '../../state/StateController';
 import style from './CategoryLanguage.module.css';
 
 const CategoryLanguage = (props: { newConfig: any, setNewConfig: any }) => {
-  const { config, langs } = useContext(StateContext);
+  const { config, dictionary, langs } = useContext(StateContext);
+
+  const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
 
   let searchInput!: HTMLInputElement;
   let langList!: HTMLDivElement;
@@ -59,7 +62,7 @@ const CategoryLanguage = (props: { newConfig: any, setNewConfig: any }) => {
 
   return (
     <>
-      <input type="text" placeholder="Search Languages" onInput={updateSearch} onChange={updateSearch} ref={searchInput}/>
+      <input type="text" placeholder={t(`options.language.search`)} onInput={updateSearch} onChange={updateSearch} ref={searchInput}/>
       <div class={style.langList} ref={langList}>
         <For each={langs()}>
           {(item) => {

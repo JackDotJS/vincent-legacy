@@ -1,11 +1,12 @@
 import { Match, Switch, createEffect, createSignal, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
+import { BaseDirectory } from '@tauri-apps/api/fs';
 import { createStore, reconcile, unwrap } from 'solid-js/store';
 import style from './OptionsWrapper.module.css';
 
 import CategoryLanguage from './CategoryLanguage';
-import { BaseDirectory } from '@tauri-apps/api/fs';
+import CategoryInput from './CategoryInput';
 
 const OptionsWrapper = () => {
   const { config, setConfig, state, setState, dictionary, writeQ } = useContext(StateContext);
@@ -65,28 +66,28 @@ const OptionsWrapper = () => {
             <h1>{t(`options.title`)}</h1>
             <div class={style.categories}>
               <button onClick={() => setSelectedCategory(`display`)}>
-                {t(`options.categories.display`)}
+                {t(`options.display.title`)}
               </button>
               <button onClick={() => setSelectedCategory(`input`)}>
-                {t(`options.categories.input`)}
+                {t(`options.input.title`)}
               </button>
               <button onClick={() => setSelectedCategory(`theme`)}>
-                {t(`options.categories.theme`)}
+                {t(`options.themes.title`)}
               </button>
               <button onClick={() => setSelectedCategory(`plugins`)}>
-                {t(`options.categories.plugins`)}
+                {t(`options.plugins.title`)}
               </button>
               <button onClick={() => setSelectedCategory(`language`)}>
-                {t(`options.categories.language`)}
+                {t(`options.language.title`)}
               </button>
               <button onClick={() => setSelectedCategory(`system`)}>
-                {t(`options.categories.system`)}
+                {t(`options.system.title`)}
               </button>
               <button onClick={() => setSelectedCategory(`debug`)}>
-                {t(`options.categories.debug`)}
+                {t(`options.debug.title`)}
               </button>
               <button onClick={() => setSelectedCategory(`experimental`)}>
-                {t(`options.categories.experimental`)}
+                {t(`options.experimental.title`)}
               </button>
 
               <button class={style.buttonDivider}>
@@ -108,6 +109,9 @@ const OptionsWrapper = () => {
         <div class={style.optionsContentSeparator}>
           <div class={style.optionsContent}>
             <Switch fallback={<div>category not yet defined: {selectedCategory()}</div>}>
+              <Match when={selectedCategory() === `input`}>
+                <CategoryInput newConfig={newConfig} setNewConfig={setNewConfig} />
+              </Match>
               <Match when={selectedCategory() === `language`}>
                 <CategoryLanguage newConfig={newConfig} setNewConfig={setNewConfig} />
               </Match>

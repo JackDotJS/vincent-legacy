@@ -5,15 +5,31 @@
   },
   "options": {
     "title": "Options",
-    "categories": {
-      "display": "Display",
-      "theme": "Themes",
-      "input": "Input",
-      "plugins": "Plugins",
-      "language": "Language",
-      "system": "System",
-      "debug": "Debug",
-      "experimental": "Experimental"
+    "display": {
+      "title": "Display"
+    },
+    "input": {
+      "title": "Input",
+      "searchKb": "Search Key-bindings"
+    },
+    "themes": {
+      "title": "Themes"
+    },
+    "plugins": {
+      "title": "Plugins"
+    },
+    "language": {
+      "title": "Language",
+      "search": "Search Languages"
+    },
+    "system": {
+      "title": "System"
+    },
+    "debug": {
+      "title": "Debug"
+    },
+    "experimental": {
+      "title": "Experimental"
     },
     "save": "Save Changes",
     "discard": "Discard Changes"
