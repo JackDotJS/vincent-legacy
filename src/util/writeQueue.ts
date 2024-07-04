@@ -46,4 +46,4 @@ class WriteQueue {
   }
 }
 
-export const wq = new WriteQueue();
+export const writeQ = new WriteQueue();

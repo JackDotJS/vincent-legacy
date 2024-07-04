@@ -5,9 +5,10 @@ import { createStore, reconcile, unwrap } from 'solid-js/store';
 import style from './OptionsWrapper.module.css';
 
 import CategoryLanguage from './CategoryLanguage';
+import { BaseDirectory } from '@tauri-apps/api/fs';
 
 const OptionsWrapper = () => {
-  const { config, setConfig, state, setState, dictionary } = useContext(StateContext);
+  const { config, setConfig, state, setState, dictionary, writeQ } = useContext(StateContext);
 
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
 
@@ -19,7 +20,11 @@ const OptionsWrapper = () => {
   const [selectedCategory, setSelectedCategory] = createSignal(`display`);
 
   const applyConfig = () => {
-    setConfig(reconcile(unwrap(newConfig)));
+    const uwNewConfig = unwrap(newConfig);
+    setConfig(reconcile(uwNewConfig));
+
+    writeQ.add(`config.json`, JSON.stringify(uwNewConfig), { dir: BaseDirectory.AppData });
+
     console.debug(`new config applied`);
   };
 

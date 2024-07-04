@@ -4,7 +4,7 @@ import { BaseDirectory, appDataDir, resolveResource} from "@tauri-apps/api/path"
 import { exists, readTextFile, readDir, FileEntry } from "@tauri-apps/api/fs";
 import * as i18n from "@solid-primitives/i18n";
 import defaultConfig from './defaultConfig.json';
-import { wq } from '../util/writeQueue';
+import { writeQ } from '../util/writeQueue';
 import { deepMerge } from '../util/deepMerge';
 
 // TODO: unfuck all of this garbage
@@ -58,7 +58,7 @@ export const StateController = (props: { children?: JSXElement }) => {
 
       cfgFinal = cfgjson;
     } else {
-      wq.add(`config.json`, JSON.stringify(defaultConfig), { dir: BaseDirectory.AppData });
+      writeQ.add(`config.json`, JSON.stringify(defaultConfig), { dir: BaseDirectory.AppData });
     }
 
     const localeDir = await readDir(`locale`, { dir: BaseDirectory.Resource });
@@ -76,6 +76,7 @@ export const StateController = (props: { children?: JSXElement }) => {
     setConfig,
     dictionary,
     langs,
+    writeQ
   };
 
   return (
