@@ -114,7 +114,9 @@ const OptionsWrapper = () => {
             </Switch>
           </div>
           <div class={style.optionsCloseWrapper}>
-            <button onClick={() => setState(`optionsOpen`, false) }>{t(`generic.close`)}</button>
+            <button onClick={() => { setState(`optionsOpen`, false); discardConfig(); } }>
+              {t(`generic.close`)}
+            </button>
           </div>
         </div>
       </div>
