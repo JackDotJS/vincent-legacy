@@ -3,6 +3,9 @@ import * as i18n from '@solid-primitives/i18n';
 import { StateContext } from '../../state/StateController';
 import style from './CategoryLanguage.module.css';
 
+// TODO: show % language completion
+// TODO: use dice's coefficient for search
+// TODO: add a banner to encourage localization contributions
 const CategoryLanguage = (props: { newConfig: any, setNewConfig: any }) => {
   const { config, dictionary, langs } = useContext(StateContext);
 
