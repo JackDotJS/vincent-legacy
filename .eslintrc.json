@@ -1,72 +1,26 @@
 {
-  "parserOptions": {
-    "ecmaVersion": 2020,
-    "ecmaFeatures": {
-      "jsx": true
-    }
-  },
-  "overrides": [
-    {
-      "files": [ "*.mjs" ],
-      "parserOptions": {
-        "sourceType": "module"
-      }
-    }
-  ],
-  "parser": "@typescript-eslint/parser",
-  "plugins": [
-    "@typescript-eslint",
-    "solid"
-  ],
-  "env": {
-    "es6": true,
-    "node": true,
-    "browser": true
-  },
+  "plugins": ["solid"],
   "extends": [
     "eslint:recommended",
-    "plugin:solid/typescript"
+    "plugin:solid/typescript",
+    "@electron-toolkit/eslint-config-ts/recommended"
   ],
   "rules": {
-    "no-console": "off",
     "indent": [
       "warn",
       2,
       {
-        "SwitchCase": 1
+        "SwitchCase": 1,
+        "ignoreComments": true
       }
     ],
     "semi": [
       "warn",
       "always"
     ],
-    "space-before-blocks": [
+    "quotes": [
       "warn",
-      {
-        "functions": "always",
-        "keywords": "always",
-        "classes": "always"
-      }
-    ],
-    "prefer-const": [
-      "warn",
-      {
-        "destructuring": "any",
-        "ignoreReadBeforeAssign": false
-      }
-    ],
-    "no-unused-vars": "warn",
-    "@typescript-eslint/no-unused-vars": "warn",
-    "no-var": "warn",
-    "require-atomic-updates": "off",
-    "no-empty": "off",
-    "no-use-before-define": [
-      "error",
-      {
-        "functions": false,
-        "classes": false
-      }
-    ],
-    "no-case-declarations": 0
+      "backtick"
+    ]
   }
 }
