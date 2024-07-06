@@ -20,7 +20,7 @@
           "$FONT/*",
           "$TEMP/vincent/*",
           "$APPDATA/*",
-          "$RESOURCE/*"
+          "$RESOURCE/**"
         ],
         "readFile": true,
         "writeFile": true,
