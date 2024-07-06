@@ -32,7 +32,8 @@
   align-items: center;
 }
 
-.kbActionItem > span {
+.kbActionItem > input {
+  width: 15rem;
   margin-right: auto;
 }
 
@@ -41,12 +42,12 @@
   height: 3rem;
 }
 
-.kbActionItem input {
+.kbActionItem > label > input {
   width: 1rem;
   height: 1rem;
 }
 
-.kbActionItem label {
+.kbActionItem > label {
   display: flex;
   align-items: center;
   justify-content: center;

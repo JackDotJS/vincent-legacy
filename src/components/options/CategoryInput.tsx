@@ -44,11 +44,10 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
 
   onMount(() => {
     document.addEventListener(`keydown`, (ev: KeyboardEvent) => {
-      console.debug(`keydown`);
       if (!listening() || buttonTarget == null) return;
       ev.preventDefault();
 
-      if (ev.key === `Escape`) {
+      if (ev.code === `Escape`) {
         setListening(false);
         currentKeyCombo = ``;
 
@@ -64,7 +63,7 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
         currentKeyCombo += ` + `;
       }
 
-      switch (ev.key) {
+      switch (ev.code) {
         case `Control`:
           currentKeyCombo += `Ctrl`;
           break;
@@ -72,7 +71,7 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
           currentKeyCombo += `Space`;
           break;
         default:
-          currentKeyCombo += ev.key;
+          currentKeyCombo += ev.code;
       }
 
       console.debug(currentKeyCombo);
@@ -124,16 +123,14 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
       <input placeholder={t(`options.input.searchKb`)} type="text" />
       <div class={style.kbLegend}>
         <span class={style.kbLegendTitle}>Action</span>
-        <span class={style.kbLegendPrimary}>Primary</span>
-        <span class={style.kbLegendAlt}>Secondary</span>
+        <span class={style.kbLegendPrimary}>Keybind</span>
       </div>
       <div class={style.kbActionItem}>
         <label>
           <input type="checkbox" checked/>
         </label>
-        <span>example keybind</span>
+        <input type="text" value="example keybind" />
         <button onClick={(ev) => beginRebind(ev)}>CTRL + A</button>
-        <button onClick={(ev) => beginRebind(ev)}>CTRL + B</button>
       </div>
     </>
   );
