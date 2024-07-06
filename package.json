@@ -1,9 +1,8 @@
 {
-  "name": "vincent",
-  "version": "1.0.0",
-  "description": "An Electron application with Solid and TypeScript",
+  "name": "@jackdotjs/vincent",
+  "private": true,
+  "version": "0.1.0",
   "main": "./out/main/index.js",
-  "author": "example.com",
   "homepage": "https://electron-vite.org",
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -37,5 +36,6 @@
     "typescript": "^5.5.2",
     "vite": "^5.3.1",
     "vite-plugin-solid": "^2.10.2"
-  }
+  },
+  "packageManager": "pnpm@9.4.0+sha256.b6fd0bfda555e7e584ad7e56b30c68b01d5a04f9ee93989f4b93ca8473c49c74"
 }
