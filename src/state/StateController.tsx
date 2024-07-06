@@ -1,6 +1,6 @@
 import { JSXElement, Show, createContext, createResource, createSignal, onMount } from "solid-js";
 import { createStore, reconcile } from 'solid-js/store';
-import { BaseDirectory, appDataDir, resolveResource} from "@tauri-apps/api/path";
+import { BaseDirectory, appDataDir } from "@tauri-apps/api/path";
 import { exists, readTextFile, readDir, FileEntry } from "@tauri-apps/api/fs";
 import * as i18n from "@solid-primitives/i18n";
 import defaultConfig from './defaultConfig.json';
@@ -17,11 +17,9 @@ import { deepMerge } from '../util/deepMerge';
 export const StateContext = createContext<any>();
 
 const fetchDictionary = async (locale: string) => {
-  const defaultDictPath = await resolveResource(`locale/${defaultConfig.locale}.json`);
-  const defaultDictionary = (await import(defaultDictPath)).default;
+  const defaultDictionary = (JSON.parse(await readTextFile(`locale/${defaultConfig.locale}.json`, { dir: BaseDirectory.Resource })));
 
-  const newDictPath = await resolveResource(`locale/${locale}.json`);
-  const newDictionary = (await import(newDictPath)).default;
+  const newDictionary = (JSON.parse(await readTextFile(`locale/${locale}.json`, { dir: BaseDirectory.Resource })));
 
   const mergedDictionaries = deepMerge(defaultDictionary, newDictionary);
 
