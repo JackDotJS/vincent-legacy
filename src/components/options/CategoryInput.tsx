@@ -1,4 +1,4 @@
-import { onMount, useContext } from 'solid-js';
+import { createSignal, onMount, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 import style from './CategoryInput.module.css';
@@ -11,13 +11,14 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
   const { dictionary } = useContext(StateContext);
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
 
-  let listening = false;
+  const [listening, setListening] = createSignal(false);
+
   let buttonTarget: HTMLButtonElement | null = null;
   let oldLabel = ``;
   let currentKeyCombo = ``;
 
   const beginRebind = (ev: Event) => {
-    listening = true;
+    setListening(true);
     buttonTarget = ev.target as HTMLButtonElement;
     oldLabel = buttonTarget.innerText;
 
@@ -26,10 +27,11 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
     console.debug(`begin rebind`);
   };
 
-  const finishRebind = () => {
-    if (!listening || buttonTarget == null) return;
+  const finishRebind = (ev: MouseEvent|Event) => {
+    if (!listening() || buttonTarget == null) return;
+    ev.preventDefault();
 
-    listening = false;
+    setListening(false);
 
     console.debug(currentKeyCombo);
 
@@ -43,11 +45,11 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
   onMount(() => {
     document.addEventListener(`keydown`, (ev: KeyboardEvent) => {
       console.debug(`keydown`);
-      if (!listening || buttonTarget == null) return;
+      if (!listening() || buttonTarget == null) return;
       ev.preventDefault();
 
       if (ev.key === `Escape`) {
-        listening = false;
+        setListening(false);
         currentKeyCombo = ``;
 
         buttonTarget.innerText = oldLabel;
@@ -79,7 +81,7 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
     document.addEventListener(`keyup`, finishRebind);
 
     document.addEventListener(`mousedown`, (ev: MouseEvent) => {
-      if (!listening || buttonTarget == null) return;
+      if (!listening() || buttonTarget == null) return;
       ev.preventDefault();
 
       if (currentKeyCombo.length > 0) {
@@ -106,7 +108,7 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
     });
 
     document.addEventListener(`contextmenu`, (ev: MouseEvent) => {
-      if (!listening || buttonTarget == null) return;
+      if (!listening() || buttonTarget == null) return;
       ev.preventDefault();
     });
 
@@ -118,6 +120,7 @@ const CategoryInput = (props: { newConfig: any, setNewConfig: any }) => {
 
   return (
     <>
+      <div classList={{ [style.disableClicks]: listening() }} />
       <input placeholder={t(`options.input.searchKb`)} type="text" />
       <div class={style.kbLegend}>
         <span class={style.kbLegendTitle}>Action</span>
