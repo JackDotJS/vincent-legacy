@@ -4,7 +4,6 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 
 function createWindow(): void {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
@@ -12,8 +11,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === `linux` ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, `../preload/index.js`),
-      sandbox: false
+      preload: join(__dirname, `../preload/index.js`)
     }
   });
 
@@ -61,14 +59,9 @@ app.whenReady().then(() => {
   });
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+// Quit when all windows are closed, except on macOS.
 app.on(`window-all-closed`, () => {
   if (process.platform !== `darwin`) {
     app.quit();
   }
 });
-
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
