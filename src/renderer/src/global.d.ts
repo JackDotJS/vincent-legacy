@@ -1,5 +1,6 @@
 export interface IElectronAPI {
-  pingTest: () => Promise<void>
+  pingTest: () => Promise<void>,
+  writeConfig: (config) => Promise<void>
 }
 
 declare global {

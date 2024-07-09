@@ -15,6 +15,7 @@ const App = (): JSXElement => {
       <button onClick={() => setState(`optionsOpen`, true) }>{t(`options.title`)}</button> */}
       <h1>electron test</h1>
       <button onClick={() => window.electron.pingTest()}>ping</button>
+      <button onClick={() => window.electron.writeConfig({ penis: true })}>writeConfig</button>
     </>
   );
 };
