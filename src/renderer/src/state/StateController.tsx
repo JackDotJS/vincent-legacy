@@ -1,7 +1,7 @@
 import { JSXElement, Show, createContext, createSignal, onMount } from "solid-js";
-import { createStore, reconcile } from 'solid-js/store';
+import { createStore } from 'solid-js/store';
 // import * as i18n from "@solid-primitives/i18n";
-import defaultConfig from './defaultConfig.json';
+// import defaultConfig from './defaultConfig.json';
 // import { writeQ } from '../util/writeQueue';
 // import { deepMerge } from '../util/deepMerge';
 
@@ -30,10 +30,10 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
   // we need to clone this because otherwise it turns out
   // modifications to the store change the imported config
   // itself for whatever fuckign reason??????????????
-  const clonedDefaultCfg = structuredClone(defaultConfig);
+  // const clonedDefaultCfg = structuredClone(defaultConfig);
 
   const [loaded, setLoaded] = createSignal(false);
-  const [config, setConfig] = createStore(clonedDefaultCfg);
+  const [config, setConfig] = createStore();
   const [state, setState] = createStore({
     optionsOpen: false,
   });
@@ -43,7 +43,7 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
   // const [ dictionary ] = createResource(() => config.locale, fetchDictionary);
   
   onMount(async () => {
-    const cfgFinal = clonedDefaultCfg;
+    // const cfgFinal = clonedDefaultCfg;
 
     // const appdata = await appDataDir();
     // const cfgExists = await exists(`${appdata}/config.json`);
@@ -61,7 +61,7 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
 
     //setLangs(localeDir);
 
-    setConfig(reconcile(cfgFinal));
+    // setConfig(reconcile(cfgFinal));
     setLoaded(true);
   });
 
