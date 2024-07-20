@@ -1,16 +1,10 @@
-import defaultConfig from '../defaultConfig.json';
-// import { writeFileSync } from 'fs';
-import { IpcMainEvent, app } from 'electron';
+import { IpcMainInvokeEvent, app } from 'electron';
+import { writeQ } from '../writeQueue';
 
-export default (event: IpcMainEvent, ...args: unknown[]): void => {
-  event; // stfu typescript
+export default (event: IpcMainInvokeEvent, ...args: unknown[]): Promise<undefined|Error> => {
+  console.debug(event);
 
-  const equalTypes = typeof args[0] === typeof defaultConfig;
-  
-  console.debug(typeof defaultConfig);
-  console.debug(typeof args[0]);
-  console.debug(equalTypes);
-  
-  //console.debug(config);
-  console.debug(app.getPath(`userData`));
+  console.debug(args[0]);
+
+  return writeQ.add(`${app.getPath(`userData`)}/config.json`, JSON.stringify(args[0]));
 };

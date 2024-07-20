@@ -48,7 +48,7 @@ app.whenReady().then(async () => {
   // IPC test
   ipcMain.on(`ping`, () => console.log(`pong`));
 
-  ipcMain.on(`writeConfig`, (await import(`./api/writeConfig`)).default);
+  ipcMain.handle(`writeConfig`, (await import(`./api/writeConfig`)).default);
 
   createWindow();
 
