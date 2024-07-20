@@ -1,18 +1,35 @@
 import { JSXElement, Show, createContext, createSignal, onMount } from "solid-js";
-import { createStore } from 'solid-js/store';
+import { createStore, reconcile } from 'solid-js/store';
+import defaultConfig from '../../../common/defaultConfig.json';
 // import * as i18n from "@solid-primitives/i18n";
-// import defaultConfig from './defaultConfig.json';
 // import { writeQ } from '../util/writeQueue';
 // import { deepMerge } from '../util/deepMerge';
 
-// TODO: unfuck all of this garbage
+// we need to clone this because otherwise it turns out
+// modifications to the store change the imported config
+// itself for whatever fuckign reason??????????????
+const clonedDefaultCfg = structuredClone(defaultConfig);
 
-// interface StateExports {
-//   state: any,
-//   setState: SetStoreFunction<any>
-// }
+const [ready, setReady] = createSignal(false);
+const [config, setConfig] = createStore(clonedDefaultCfg);
+const [state, setState] = createStore({
+  optionsOpen: false,
+});
 
-export const StateContext = createContext();
+// TEMPORARY
+const dictionary = (): null => null;
+const langs = null;
+
+const scValues = {
+  state,
+  setState,
+  config,
+  setConfig,
+  dictionary,
+  langs
+};
+
+export const StateContext = createContext(scValues);
 
 // const fetchDictionary = async (locale: string): Promise<i18n.BaseRecordDict> => {
 //   const defaultDictionary = (JSON.parse(await readTextFile(`locale/${defaultConfig.locale}.json`, { dir: BaseDirectory.Resource })));
@@ -27,62 +44,25 @@ export const StateContext = createContext();
 // };
 
 export const StateController = (props: { children?: JSXElement }): JSXElement => {
-  // we need to clone this because otherwise it turns out
-  // modifications to the store change the imported config
-  // itself for whatever fuckign reason??????????????
-  // const clonedDefaultCfg = structuredClone(defaultConfig);
-
-  const [loaded, setLoaded] = createSignal(false);
-  const [config, setConfig] = createStore();
-  const [state, setState] = createStore({
-    optionsOpen: false,
-  });
-
   //const [langs, setLangs] = createSignal<FileEntry[]>([]);
 
   // const [ dictionary ] = createResource(() => config.locale, fetchDictionary);
   
   onMount(async () => {
-    // const cfgFinal = clonedDefaultCfg;
-
-    // const appdata = await appDataDir();
-    // const cfgExists = await exists(`${appdata}/config.json`);
-
-    // if (cfgExists) {
-      // const config = await readTextFile(`config.json`, { dir: BaseDirectory.AppData });
-      // const cfgjson = JSON.parse(config);
-
-    //   cfgFinal = cfgjson;
-    // } else {
-    //   writeQ.add(`config.json`, JSON.stringify(defaultConfig), { dir: BaseDirectory.AppData });
-    // }
+    const config = await window.electron.readConfig();
+    setConfig(reconcile(config));
 
     //const localeDir = await readDir(`locale`, { dir: BaseDirectory.Resource });
 
     //setLangs(localeDir);
 
     // setConfig(reconcile(cfgFinal));
-    setLoaded(true);
+    setReady(true);
   });
 
-  // TEMPORARY
-  const dictionary = (): null => null;
-  const langs = null;
-  const writeQ = null;
-
-  const sc = {
-    state,
-    setState,
-    config,
-    setConfig,
-    dictionary,
-    langs,
-    writeQ
-  };
-
   return (
-    <StateContext.Provider value={sc}>
-      <Show when={(loaded() /*&& dictionary()*/)}>
+    <StateContext.Provider value={scValues}>
+      <Show when={(ready() /*&& dictionary()*/)}>
         {props.children}
       </Show>
     </StateContext.Provider>

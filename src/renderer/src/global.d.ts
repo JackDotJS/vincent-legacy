@@ -1,6 +1,9 @@
+import defaultConfig from '../../common/defaultConfig.json';
+
 export interface IElectronAPI {
   pingTest: () => Promise<void>,
-  writeConfig: (config) => Promise<void>
+  readConfig: () => Promise<typeof defaultConfig>,
+  writeConfig: (config) => Promise<undefined|Error>
 }
 
 declare global {
