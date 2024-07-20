@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: vincent
+appId: com.jackdotjs.vincent
+productName: Vincent
 directories:
   buildResources: build
 files:
@@ -33,11 +33,7 @@ linux:
     - AppImage
     - snap
     - deb
-  maintainer: electronjs.org
-  category: Utility
+  category: Graphics
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
-publish:
-  provider: generic
-  url: https://example.com/auto-updates

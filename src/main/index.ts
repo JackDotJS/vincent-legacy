@@ -1,6 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+// @ts-expect-error idfk why this is suddenly having issues
 import icon from '../../resources/icon.png?asset';
 
 function createWindow(): void {
