@@ -51,6 +51,8 @@ app.whenReady().then(async () => {
 
   ipcMain.handle(`readConfig`, (await import(`./api/readConfig`)).default);
   ipcMain.handle(`writeConfig`, (await import(`./api/writeConfig`)).default);
+  ipcMain.handle(`fetchDictionaryList`, (await import(`./api/fetchDictionaryList`)).default);
+  ipcMain.handle(`fetchDictionary`, (await import(`./api/fetchDictionary`)).default);
 
   createWindow();
 
