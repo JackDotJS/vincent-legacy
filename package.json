@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "main": "./out/main/index.js",
-  "homepage": "https://electron-vite.org",
+  "homepage": "https://github.com/JackDotJS/vincent",
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
