@@ -5,8 +5,8 @@
 A simple, modern, cross-platform image editor.
 
 <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-000?style=for-the-badge&logoColor=white&logo=typescript&color=2F73BF" alt="TypeScript" /></a>
-<a href="https://www.solidjs.com/"><img src="https://img.shields.io/badge/SolidJS-000?style=for-the-badge&logoColor=white&logo=solid&color=2C4F7C" alt="SolidJS" /></a>
-<a href="https://tauri.app/"><img src="https://img.shields.io/badge/Tauri-0f0f0f?style=for-the-badge&logoColor=white&logo=tauri" alt="Tauri" /></a>
+<a href="https://www.solidjs.com/"><img src="https://img.shields.io/badge/SolidJS-335d92?style=for-the-badge&logo=solid" alt="SolidJS" /></a>
+<a href="https://www.electronjs.org/"><img src="https://img.shields.io/badge/Electron-1b1c26?style=for-the-badge&logoColor=9feaf9&logo=electron" alt="Electron" /></a>
 
 <a href="../../releases"><img src="https://img.shields.io/github/downloads/JackDotJS/vincent/total?style=for-the-badge" alt="Downloads" /></a>
 <a href="../../actions/workflows/dist-snapshot.yml"><img src="https://img.shields.io/github/actions/workflow/status/JackDotJS/vincent/dist-snapshot.yml?branch=main&label=SNAPSHOT%20BUILDS&style=for-the-badge" alt="Snapshots" /></a>
