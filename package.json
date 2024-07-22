@@ -1,5 +1,7 @@
 {
-  "name": "@jackdotjs/vincent",
+  "name": "vincent",
+  "description": "A simple, modern, cross-platform image editor.",
+  "author": "JackDotJS",
   "private": true,
   "version": "0.1.0",
   "main": "./out/main/index.js",
