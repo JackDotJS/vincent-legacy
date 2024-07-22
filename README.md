@@ -1,6 +1,6 @@
 # Vincent
 
-<img src="https://raw.githubusercontent.com/JackDotJS/vincent/main/src-tauri/icons/128x128@2x.png" align="right" height="150px">
+<img src="https://raw.githubusercontent.com/JackDotJS/vincent/main/resources/icon.png" align="right" height="150px">
 
 A simple, modern, cross-platform image editor.
 
