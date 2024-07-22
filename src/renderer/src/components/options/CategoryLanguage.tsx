@@ -1,80 +1,85 @@
-import { JSXElement } from 'solid-js';
-// import * as i18n from '@solid-primitives/i18n';
-// import { StateContext } from '../../state/StateController';
+import { createEffect, createSignal, For, JSXElement, onMount, useContext } from 'solid-js';
+import * as i18n from '@solid-primitives/i18n';
+import { StateContext } from '../../state/StateController';
 import style from './CategoryLanguage.module.css';
+import { SetStoreFunction } from 'solid-js/store';
 
 // TODO: show % language completion
 // TODO: use dice's coefficient for search
 // TODO: add a banner to encourage localization contributions
-const CategoryLanguage = (props: { newConfig: unknown, setNewConfig: unknown }): JSXElement => {
-  // const { config, dictionary, langs } = useContext(StateContext);
+const CategoryLanguage = (props: { 
+  newConfig: VincentConfig, 
+  setNewConfig: SetStoreFunction<VincentConfig> 
+}): JSXElement => {
+  const { config, dictionary } = useContext(StateContext);
 
-  // const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
+  const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
 
-  const t = (...a: string[]): string => a && ``;
+  const [ langs, setLangs ] = createSignal<string[]>([]);
 
   let searchInput!: HTMLInputElement;
   let langList!: HTMLDivElement;
 
-  props;
+  const langItems: HTMLInputElement[] = [];
 
-  // const langItems: HTMLInputElement[] = [];
+  const langNameGetter = (): Intl.DisplayNames => {
+    return new Intl.DisplayNames([config.locale.replace(`_`, `-`)], {
+      type: `language`
+    });
+  };
 
-  // const langNameGetter = () => {
-  //   return new Intl.DisplayNames([config.locale.replace(`_`, `-`)], {
-  //     type: `language`
-  //   });
-  // };
+  const [langName, setLangNameGetter] = createSignal(langNameGetter());
 
-  // const [langName, setLangNameGetter] = createSignal(langNameGetter());
+  const updateSearch = (e: Event): void => {
+    if (e.target == null) return;
+    if (!(e.target instanceof HTMLInputElement)) return;
 
-  // const updateSearch = (e: Event) => {
-  //   if (e.target == null) return;
-  //   if (!(e.target instanceof HTMLInputElement)) return;
+    const searchString = e.target.value.toLowerCase();
 
-  //   const searchString = e.target.value.toLowerCase();
+    const labels = langList.querySelectorAll(`label`);
 
-  //   const labels = langList.querySelectorAll(`label`);
+    for (let i = 0; i < labels.length; i++) {
+      const elem = labels[i];
+      const sourceString = elem.innerText.toLowerCase();
 
-  //   for (let i = 0; i < labels.length; i++) {
-  //     const elem = labels[i];
-  //     const sourceString = elem.innerText.toLowerCase();
+      if (!sourceString.includes(searchString)) {
+        elem.style.display = `none`;
+      } else {
+        elem.style.display = ``;
+      }
+    }
+  };
 
-  //     if (!sourceString.includes(searchString)) {
-  //       elem.style.display = `none`;
-  //     } else {
-  //       elem.style.display = ``;
-  //     }
-  //   }
-  // };
+  createEffect(() => {
+    for (let i = 0; i < langItems.length; i++) {
+      const item = langItems[i];
+      const langCode = item.value;
 
-  // createEffect(() => {
-  //   for (let i = 0; i < langItems.length; i++) {
-  //     const item = langItems[i];
-  //     const langCode = item.value;
+      if (langCode === props.newConfig.locale) {
+        item.checked = true;
+      }
+    }
+  });
 
-  //     if (langCode === props.newConfig.locale) {
-  //       item.checked = true;
-  //     }
-  //   }
-  // });
+  createEffect(() => {
+    setLangNameGetter(langNameGetter());
+  });
 
-  // createEffect(() => {
-  //   setLangNameGetter(langNameGetter());
-  // });
+  onMount(async () => {
+    // UX: auto-focus on search text box when this category is opened
+    searchInput.focus();
 
-  // onMount(() => {
-  //   // UX: auto-focus on search text box when this category is opened
-  //   searchInput.focus();
-  // });
+    const getLangs = await window.electron.fetchDictionaryList();
+    setLangs(getLangs);
+  });
 
   return (
     <>
-      <input type="text" placeholder={t(`options.language.search`)} /*onInput={updateSearch} onChange={updateSearch}*/ ref={searchInput}/>
+      <input type="text" placeholder={t(`options.language.search`)} onInput={updateSearch} onChange={updateSearch} ref={searchInput}/>
       <div class={style.langList} ref={langList}>
-        {/* <For each={langs()}>
-          {(item) => {
-            const langCode = item.name.split(`.`)[0];
+        <For each={langs()}>
+          {(langCode) => {
+            console.debug(langCode);
             const langCodeFixed = langCode.replace(`_`, `-`);
 
             const nativeLangName = new Intl.DisplayNames([langCodeFixed], {
@@ -89,7 +94,7 @@ const CategoryLanguage = (props: { newConfig: unknown, setNewConfig: unknown }):
               </label>
             );
           }}
-        </For> */}
+        </For>
       </div>
     </>
   );
