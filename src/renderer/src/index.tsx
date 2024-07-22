@@ -9,4 +9,4 @@ render(() => {
       <App />
     </StateController>
   );
-}, document.body as HTMLElement);
+}, document.body);
