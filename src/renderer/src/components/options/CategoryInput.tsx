@@ -1,6 +1,6 @@
-import { JSXElement, createSignal, onMount } from 'solid-js';
-// import { StateContext } from '../../state/StateController';
-// import * as i18n from '@solid-primitives/i18n';
+import { JSXElement, createSignal, onMount, useContext } from 'solid-js';
+import { StateContext } from '../../state/StateController';
+import * as i18n from '@solid-primitives/i18n';
 import style from './CategoryInput.module.css';
 
 
@@ -8,10 +8,8 @@ import style from './CategoryInput.module.css';
 // TODO: highlight keybind button when activing rebinding
 // TODO: ability to delete and create new keybinds, probably just gonna copy blender's solution to this
 const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JSXElement => {
-  // const { dictionary } = useContext(StateContext);
-  // const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
-
-  const t = (...a: string[]): string => a && ``;
+  const { dictionary } = useContext(StateContext);
+  const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
 
   const [listening, setListening] = createSignal(false);
 
