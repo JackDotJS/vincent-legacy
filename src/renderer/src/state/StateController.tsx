@@ -1,7 +1,8 @@
-import { JSXElement, Show, createContext, createResource, createSignal, onMount } from "solid-js";
-import { createStore, reconcile } from 'solid-js/store';
+import { JSXElement, Show, createContext, createEffect, createResource, createSignal, onMount } from "solid-js";
+import { createStore, reconcile, unwrap } from 'solid-js/store';
 import defaultConfig from '../../../common/defaultConfig.json';
 import * as i18n from "@solid-primitives/i18n";
+import { deepEquals } from "../../../common/deepEquals";
 
 const [ ready, setReady ] = createSignal(false);
 const [ config, setConfig ] = createStore(structuredClone(defaultConfig));
@@ -29,8 +30,19 @@ export const StateContext = createContext(scValues);
 
 export const StateController = (props: { children?: JSXElement }): JSXElement => {
   onMount(async () => {
-    const config = await window.electron.readConfig();
-    setConfig(reconcile(config));
+    const readConfig = await window.electron.readConfig();
+    setConfig(reconcile(readConfig));
+
+    createEffect((oldConfig) => {
+      if (deepEquals(unwrap(oldConfig), unwrap(config))) {
+        console.debug(`new config same as old config, skipping write`);
+        return;
+      }
+
+      console.debug(`writing new config:`, config);
+      window.electron.writeConfig(unwrap(config));
+    }, readConfig);
+
     setReady(true);
   });
 
