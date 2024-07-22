@@ -1,3 +1,7 @@
 :root {
   --main-bg: #aaaaaa;
 }
+
+html {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
