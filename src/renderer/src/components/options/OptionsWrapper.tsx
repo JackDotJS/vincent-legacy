@@ -14,7 +14,7 @@ const OptionsWrapper = (): JSXElement => {
 
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
 
-  const [newConfig, setNewConfig] = createStore(structuredClone(unwrap(config)));
+  const [newConfig, setNewConfig] = createStore<VincentConfig>(structuredClone(unwrap(config)));
 
   let saveButton!: HTMLButtonElement;
   let discardButton!: HTMLButtonElement;

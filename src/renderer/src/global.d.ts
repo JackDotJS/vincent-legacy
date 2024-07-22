@@ -17,4 +17,6 @@ declare global {
   // typescript just keeps yelling at me because the translator 
   // function returns unknown for some fucking reason
   type Translator = (path: string) => string;
+
+  type VincentConfig = typeof defaultConfig;
 }

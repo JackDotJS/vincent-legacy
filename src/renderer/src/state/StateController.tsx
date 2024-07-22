@@ -5,7 +5,7 @@ import * as i18n from "@solid-primitives/i18n";
 import { deepEquals } from "../../../common/deepEquals";
 
 const [ ready, setReady ] = createSignal(false);
-const [ config, setConfig ] = createStore(structuredClone(defaultConfig));
+const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(defaultConfig));
 const [ state, setState ] = createStore({
   optionsOpen: false,
 });
