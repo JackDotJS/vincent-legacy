@@ -18,7 +18,7 @@ export default async (event: IpcMainInvokeEvent): Promise<string[]> => {
   for (const entry of locales) {
     if (!entry.isFile()) continue;
 
-    result.push(entry.name);
+    result.push(entry.name.split(`.`)[0]);
   }
 
   return result;
