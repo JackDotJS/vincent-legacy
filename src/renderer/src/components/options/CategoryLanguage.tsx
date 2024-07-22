@@ -3,6 +3,7 @@ import * as i18n from '@solid-primitives/i18n';
 import { StateContext } from '../../state/StateController';
 import style from './CategoryLanguage.module.css';
 import { SetStoreFunction } from 'solid-js/store';
+import { trackDeep } from '@solid-primitives/deep';
 
 // TODO: show % language completion
 // TODO: use dice's coefficient for search
@@ -50,7 +51,7 @@ const CategoryLanguage = (props: {
     }
   };
 
-  createEffect(() => {
+  const updateCurrentSelected = (): void => {
     for (let i = 0; i < langItems.length; i++) {
       const item = langItems[i];
       const langCode = item.value;
@@ -59,6 +60,11 @@ const CategoryLanguage = (props: {
         item.checked = true;
       }
     }
+  };
+
+  createEffect(() => {
+    trackDeep(props.newConfig);
+    updateCurrentSelected();
   });
 
   createEffect(() => {
@@ -71,6 +77,7 @@ const CategoryLanguage = (props: {
 
     const getLangs = await window.electron.fetchDictionaryList();
     setLangs(getLangs);
+    updateCurrentSelected();
   });
 
   return (
