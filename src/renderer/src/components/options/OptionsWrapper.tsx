@@ -1,24 +1,20 @@
-import { JSXElement, Match, Switch, createEffect, createSignal } from 'solid-js';
-// import { StateContext } from '../../state/StateController';
-// import * as i18n from '@solid-primitives/i18n';
-// import { BaseDirectory } from '@tauri-apps/api/fs';
-// import { createStore, reconcile, unwrap } from 'solid-js/store';
+import { JSXElement, Match, Switch, createEffect, createSignal, useContext } from 'solid-js';
+import { StateContext } from '../../state/StateController';
+import * as i18n from '@solid-primitives/i18n';
+import { createStore, reconcile, unwrap } from 'solid-js/store';
 import style from './OptionsWrapper.module.css';
 
 import CategoryLanguage from './CategoryLanguage';
 import CategoryInput from './CategoryInput';
+import { deepEquals } from '../../../../common/deepEquals';
+
 
 const OptionsWrapper = (): JSXElement => {
-  // const { config, setConfig, state, setState, dictionary, writeQ } = useContext(StateContext);
+  const { config, setConfig, state, setState, dictionary} = useContext(StateContext);
 
-  // const t = i18n.translator(() => dictionary(), i18n.resolveTemplate);
+  const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
 
-  const t = (...a: string[]): string => a && ``;
-
-  // const [newConfig, setNewConfig] = createStore(structuredClone(unwrap(config)));
-
-  const newConfig = null;
-  const setNewConfig = null;
+  const [newConfig, setNewConfig] = createStore(structuredClone(unwrap(config)));
 
   let saveButton!: HTMLButtonElement;
   let discardButton!: HTMLButtonElement;
@@ -26,45 +22,26 @@ const OptionsWrapper = (): JSXElement => {
   const [selectedCategory, setSelectedCategory] = createSignal(`display`);
 
   const applyConfig = (): void => {
-    // const uwNewConfig = unwrap(newConfig);
-    // setConfig(reconcile(uwNewConfig));
-
-    // writeQ.add(`config.json`, JSON.stringify(uwNewConfig), { dir: BaseDirectory.AppData });
+    const uwNewConfig = unwrap(newConfig);
+    setConfig(reconcile(uwNewConfig));
 
     console.debug(`new config applied`);
   };
 
   const discardConfig = (): void => {
-    // setNewConfig(reconcile(structuredClone(unwrap(config))));
+    setNewConfig(reconcile(structuredClone(unwrap(config))));
     console.debug(`new config discarded`);
   };
 
-  // const deepCompare = (a: unknown, b: unknown): boolean => {
-  //   if (a == null || b == null) return false;
-
-  //   const equalKeyLength: boolean = (Object.keys(a).length === Object.keys(b).length);
-  //   let recursiveCompare: boolean;
-
-  //   if (typeof a === `object` && typeof b === `object`) {
-  //     recursiveCompare = Object.keys(a).every((key: string) => {
-  //       return deepCompare(a[key], b[key]);
-  //     });
-  //   } else {
-  //     recursiveCompare = (a === b);
-  //   }
-    
-  //   return (equalKeyLength && recursiveCompare);
-  // };
-
   createEffect(() => {
-    // const configsEqual = deepCompare(config, newConfig);
+    const configsEqual = deepEquals(config, newConfig);
 
-    // saveButton.disabled = configsEqual;
-    // discardButton.disabled = configsEqual;
+    saveButton.disabled = configsEqual;
+    discardButton.disabled = configsEqual;
   });
 
   return (
-    <div class={style.optionsWrapper} /*classList={{ [style.visible]: state.optionsOpen }}*/>
+    <div class={style.optionsWrapper} classList={{ [style.visible]: state.optionsOpen }}>
       <div class={style.sidebarWrapper}>
         <div class={style.sidebarScroller}>
           <div class={style.sidebar}>
@@ -123,7 +100,7 @@ const OptionsWrapper = (): JSXElement => {
             </Switch>
           </div>
           <div class={style.optionsCloseWrapper}>
-            <button /*onClick={() => { setState(`optionsOpen`, false); discardConfig(); } }*/>
+            <button onClick={() => { setState(`optionsOpen`, false); discardConfig(); } }>
               {t(`generic.close`)}
             </button>
           </div>
