@@ -3,9 +3,11 @@ import { createStore, reconcile, unwrap } from 'solid-js/store';
 import defaultConfig from '../../../common/defaultConfig.json';
 import * as i18n from "@solid-primitives/i18n";
 import { deepEquals } from "../../../common/deepEquals";
+import { trackDeep } from "@solid-primitives/deep";
 
 const [ ready, setReady ] = createSignal(false);
 const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(defaultConfig));
+
 const [ state, setState ] = createStore({
   optionsOpen: false,
 });
@@ -34,6 +36,8 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
     setConfig(reconcile(readConfig));
 
     createEffect((oldConfig) => {
+      trackDeep(config);
+
       if (deepEquals(unwrap(oldConfig), unwrap(config))) {
         console.debug(`new config same as old config, skipping write`);
         return;
