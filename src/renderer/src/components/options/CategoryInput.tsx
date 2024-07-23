@@ -27,9 +27,9 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
     console.debug(`begin rebind`);
   };
 
-  const finishRebind = (ev: MouseEvent|Event): void => {
+  const finishRebind = (ev: MouseEvent|WheelEvent|KeyboardEvent): void => {
     if (!listening() || buttonTarget == null) return;
-    ev.preventDefault();
+    if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
 
     setListening(false);
 
@@ -47,7 +47,7 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
 
     document.addEventListener(`keydown`, (ev: KeyboardEvent) => {
       if (!listening() || buttonTarget == null) return;
-      ev.preventDefault();
+      if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
 
       if (ev.code === `Escape`) {
         setListening(false);
@@ -90,21 +90,18 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
         case `AltRight`:
           currentKeyCombo += `RAlt`;
           break;
-        case ` `:
-          currentKeyCombo += `Space`;
-          break;
         default:
           currentKeyCombo += finalCode;
       }
 
-      console.debug(currentKeyCombo);
+      if (finalCode.length === 1 || finalCode === `Space`) finishRebind(ev);
     });
 
     document.addEventListener(`keyup`, finishRebind);
 
     document.addEventListener(`mousedown`, (ev: MouseEvent) => {
       if (!listening() || buttonTarget == null) return;
-      ev.preventDefault();
+      if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
 
       if (currentKeyCombo.length > 0) {
         currentKeyCombo += ` + `;
@@ -131,7 +128,32 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
 
     document.addEventListener(`contextmenu`, (ev: MouseEvent) => {
       if (!listening() || buttonTarget == null) return;
-      ev.preventDefault();
+      if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
+    });
+
+    document.addEventListener(`wheel`, (ev: WheelEvent) => {
+      if (!listening() || buttonTarget == null) return;
+      if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
+
+      console.debug(ev.deltaX, ev.deltaY, ev.deltaZ);
+
+      if (currentKeyCombo.length > 0) {
+        currentKeyCombo += ` + `;
+      }
+
+      if (ev.deltaX > 0) {
+        currentKeyCombo += `MWheelRight`;
+      } else if (ev.deltaX < 0) {
+        currentKeyCombo += `MWheelLeft`;
+      }
+
+      if (ev.deltaY > 0) {
+        currentKeyCombo += `MWheelDown`;
+      } else if (ev.deltaY < 0) {
+        currentKeyCombo += `MWheelUp`;
+      }
+
+      finishRebind(ev);
     });
 
     document.addEventListener(`mouseup`, finishRebind);
@@ -153,7 +175,7 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
           <input type="checkbox" checked/>
         </label>
         <input type="text" value="example keybind" />
-        <button onClick={(ev) => beginRebind(ev)}>CTRL + A</button>
+        <button onClick={(ev) => beginRebind(ev)}>LCTRL + A</button>
       </div>
     </>
   );
