@@ -16,6 +16,7 @@ const kblayout = await navigator.keyboard.getLayoutMap()
 // TODO: move a bunch of this input capturing logic to its own module
 // TODO: fix reactivity regarding keybind changes (may still need to use button innertext thing)
 // TODO: save/load keybinds to/from config
+// TODO: action categories
 const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JSXElement => {
   const { dictionary } = useContext(StateContext);
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
