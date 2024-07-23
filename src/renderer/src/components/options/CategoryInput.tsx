@@ -49,7 +49,7 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
       if (!listening() || buttonTarget == null) return;
       if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
 
-      if (ev.code === `Escape`) {
+      if ([`Escape`, `MetaLeft`, `MetaRight`].includes(ev.code)) {
         setListening(false);
         currentKeyCombo = ``;
 
@@ -94,6 +94,8 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
           currentKeyCombo += finalCode;
       }
 
+      buttonTarget.innerText = (currentKeyCombo + ` + ...`).toUpperCase();
+
       if (finalCode.length === 1 || finalCode === `Space`) finishRebind(ev);
     });
 
@@ -124,6 +126,8 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
           currentKeyCombo += `Forward`;
           break;
       }
+
+      finishRebind(ev);
     });
 
     document.addEventListener(`contextmenu`, (ev: MouseEvent) => {
