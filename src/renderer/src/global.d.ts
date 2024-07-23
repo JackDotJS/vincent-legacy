@@ -12,7 +12,7 @@ export interface IElectronAPI {
 export interface KeyboardLayoutMap {
   size: number,
   entries: () => Iterator,
-  forEach: (callbackFn: (currentValue: unknown, index?: number, array?: KeyboardLayoutMap) => void, thisArg: Object) => void,
+  forEach: (callbackFn: (currentValue: unknown, index?: number, array?: KeyboardLayoutMap) => void, thisArg?: NonNullable<unknown>) => void,
   get: (key: string) => string;
 }
 
