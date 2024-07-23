@@ -8,9 +8,25 @@ export interface IElectronAPI {
   fetchDictionary: (langCode: string) => Promise<object>
 }
 
+// need to define these manually bc this is an "experimental technology" (even though its existed for over 4 years)
+export interface KeyboardLayoutMap {
+  size: number,
+  entries: () => Iterator,
+  forEach: (callbackFn: (currentValue: unknown, index?: number, array?: KeyboardLayoutMap) => void, thisArg: Object) => void,
+  get: (key: string) => string;
+}
+
+export interface KeyboardAPI {
+  getLayoutMap: () => Promise<KeyboardLayoutMap>
+}
+
 declare global {
   interface Window {
     electron: IElectronAPI
+  }
+
+  interface Navigator {
+    keyboard: KeyboardAPI
   }
 
   // im not sure if this is really necessary?

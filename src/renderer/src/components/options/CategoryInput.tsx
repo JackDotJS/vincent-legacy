@@ -42,7 +42,9 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
     console.debug(`finish rebind`);
   };
 
-  onMount(() => {
+  onMount(async () => {
+    const kblayout = await navigator.keyboard.getLayoutMap();
+
     document.addEventListener(`keydown`, (ev: KeyboardEvent) => {
       if (!listening() || buttonTarget == null) return;
       ev.preventDefault();
@@ -63,15 +65,36 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
         currentKeyCombo += ` + `;
       }
 
-      switch (ev.code) {
-        case `Control`:
-          currentKeyCombo += `Ctrl`;
+      const attemptTranslatedCode = kblayout.get(ev.code);
+
+      const finalCode = attemptTranslatedCode ?? ev.code;
+
+      console.debug(ev.code, finalCode);
+
+      switch (finalCode) {
+        case `ControlLeft`:
+          currentKeyCombo += `LCtrl`;
+          break;
+        case `ControlRight`:
+          currentKeyCombo += `RCtrl`;
+          break;
+        case `ShiftLeft`:
+          currentKeyCombo += `LShift`;
+          break;
+        case `ShiftRight`:
+          currentKeyCombo += `RShift`;
+          break;
+        case `AltLeft`:
+          currentKeyCombo += `LAlt`;
+          break;
+        case `AltRight`:
+          currentKeyCombo += `RAlt`;
           break;
         case ` `:
           currentKeyCombo += `Space`;
           break;
         default:
-          currentKeyCombo += ev.code;
+          currentKeyCombo += finalCode;
       }
 
       console.debug(currentKeyCombo);
