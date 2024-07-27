@@ -6,7 +6,7 @@ import { deepEquals } from "../../../common/deepEquals";
 import { trackDeep } from "@solid-primitives/deep";
 
 const [ ready, setReady ] = createSignal(false);
-const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(defaultConfig));
+export const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(defaultConfig));
 
 export const [ state, setState ] = createStore({
   optionsOpen: false,

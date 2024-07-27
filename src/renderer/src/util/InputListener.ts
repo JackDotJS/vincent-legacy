@@ -1,5 +1,6 @@
 import { createUniqueId } from "solid-js";
-import { state } from "../state/StateController";
+import { config, state } from "../state/StateController";
+import { emit } from "./GlobalEventEmitter";
 
 interface InputListener {
   listenerId: string,
@@ -12,15 +13,27 @@ let currentTarget: Element = document.body;
 let currentKeyCombo: string[] = [];
 let preventAllDefaults: boolean = false;
 
-const emitKeyCombo = (keycombo = currentKeyCombo): void => {
+const emitKeyCombo = (newKeyCombo = currentKeyCombo): void => {
   for (const listener of listeners) {
-    listener.callback(keycombo);
+    listener.callback(newKeyCombo);
   }
 
   //console.debug(`new keyCombo`, keycombo, listeners);
 
+  console.debug(`options open state: `, state.optionsOpen);
+
   if (!state.optionsOpen) {
-    // TODO: go through keymappings list and emit for each match
+    console.debug(config.keymap, newKeyCombo);
+    for (const kmItem of config.keymap) {
+      if (!kmItem.enabled) continue;
+      // bunch of checks to see if both arrays have the same
+      // values, but not necessarily in the same order
+      if (kmItem.keyCombo.length !== newKeyCombo.length) continue;
+      if (!kmItem.keyCombo.every((key) => newKeyCombo.includes(key))) continue;
+      if (!newKeyCombo.every((key) => kmItem.keyCombo.includes(key))) continue;
+
+      emit(kmItem.action, currentTarget);
+    }
   }
 };
 
