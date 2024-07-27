@@ -7,6 +7,7 @@ import style from './OptionsWrapper.module.css';
 import CategoryLanguage from './CategoryLanguage';
 import CategoryInput from './CategoryInput';
 import { deepEquals } from '../../../../common/deepEquals';
+import { trackDeep } from '@solid-primitives/deep';
 
 
 const OptionsWrapper = (): JSXElement => {
@@ -34,7 +35,9 @@ const OptionsWrapper = (): JSXElement => {
   };
 
   createEffect(() => {
-    const configsEqual = deepEquals(config, newConfig);
+    trackDeep(newConfig);
+    trackDeep(config);
+    const configsEqual = deepEquals(unwrap(config), unwrap(newConfig));
 
     saveButton.disabled = configsEqual;
     discardButton.disabled = configsEqual;

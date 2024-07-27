@@ -3,8 +3,8 @@
   "locale": "en_US",
   "debugMode": false,
   "keymap": [
-    { "action": "Cut", "keyCombo": [ "Ctrl", "x" ] },
-    { "action": "Copy", "keyCombo": [ "Ctrl", "c" ] },
-    { "action": "Paste", "keyCombo": [ "Ctrl", "v" ] }
+    { "enabled": true, "action": "Cut", "keyCombo": [ "Ctrl", "x" ] },
+    { "enabled": true, "action": "Copy", "keyCombo": [ "Ctrl", "c" ] },
+    { "enabled": true, "action": "Paste", "keyCombo": [ "Ctrl", "v" ] }
   ]
 }

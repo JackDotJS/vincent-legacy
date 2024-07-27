@@ -1,5 +1,5 @@
-import { For, JSXElement, createSignal, onMount, useContext } from 'solid-js';
-import { createStore, SetStoreFunction, unwrap } from 'solid-js/store';
+import { For, JSXElement, createEffect, createSignal, useContext } from 'solid-js';
+import { SetStoreFunction, unwrap } from 'solid-js/store';
 import { StateContext } from '../../state/StateController';
 import { disableDefaults, enableDefaults, offKeyCombo, onKeyCombo } from '../../util/InputListener';
 
@@ -7,6 +7,7 @@ import * as i18n from '@solid-primitives/i18n';
 import style from './CategoryInput.module.css';
 
 interface KeybindItem {
+  enabled: boolean,
   action: string,
   keyCombo: string[]
 }
@@ -18,7 +19,6 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
   const { dictionary } = useContext(StateContext);
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
 
-  const [ keybinds, setKeybinds ] = createStore<KeybindItem[]>(props.newConfig.keymap);
   const [ listening, setListening ] = createSignal(false);
 
   let keyComboListener = ``;
@@ -30,8 +30,8 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
       translated.push(kblayout.get(item) ?? item);
     }
 
-    console.debug(`before`, keycombo);
-    console.debug(`after`, translated);
+    // console.debug(`before`, keycombo);
+    // console.debug(`after`, translated);
 
     return translated;
   }
@@ -68,8 +68,9 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
 
       const translated = translateInputCodes(keyCombo);
 
-      setKeybinds(index, {
-        action: keybinds[index].action, 
+      props.setNewConfig(`keymap`, index, {
+        enabled: props.newConfig.keymap[index].enabled,
+        action: props.newConfig.keymap[index].action, 
         keyCombo: translated
       });
 
@@ -87,21 +88,40 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
   };
 
   const removeKeybind = (index: number): void => {
-    setKeybinds((old) => {
-      return old.filter((_item, filterIndex) => index !== filterIndex)
-    });
+    const oldKeymap = structuredClone(unwrap(props.newConfig.keymap));
+    const filtered = oldKeymap.filter((_item, filterIndex) => index !== filterIndex)
+    props.setNewConfig(`keymap`, filtered);
   }
 
   const addNewKeybind = (): void => {
-    setKeybinds((old) => {
-      return old.concat([{ action: ``, keyCombo: [] }])
-    })
+    props.setNewConfig(`keymap`, (currentKeymap) => [
+      ...currentKeymap,
+      { 
+        enabled: true, 
+        action: ``, 
+        keyCombo: [] 
+      }
+    ]);
   }
 
-  onMount(() => {
-    // just to make the warning shut up for now
-    props.setNewConfig(`keymap`, keybinds);
-  });
+  const setKeybindEnabled = (enabled: boolean, index: number): void => {
+    props.setNewConfig(`keymap`, index, {
+      enabled: enabled,
+      action: props.newConfig.keymap[index].action, 
+      keyCombo: props.newConfig.keymap[index].keyCombo
+    });
+  }
+
+  const setKeybindActionId = (ev: Event, index: number): void => {
+    if (ev.target == null) return;
+    const textbox = ev.target as HTMLInputElement;
+
+    props.setNewConfig(`keymap`, index, {
+      enabled: props.newConfig.keymap[index].enabled,
+      action: textbox.value, 
+      keyCombo: props.newConfig.keymap[index].keyCombo
+    });
+  };
 
   return (
     <>
@@ -111,17 +131,41 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
         <span class={style.columnActionName}>Action</span>
         <span class={style.columnKeybind}>Keybind</span>
       </div>
-      <For each={keybinds}>
+      <For each={props.newConfig.keymap}>
         {(item: KeybindItem, index) => {
+          let toggle!: HTMLInputElement;
+          let actionId!: HTMLInputElement;
+          let keybind!: HTMLButtonElement;
+
+          createEffect(() => {
+            toggle.checked = item.enabled;
+
+            // TODO: maybe make these slightly transparent 
+            // instead of completely disabling them?
+            actionId.disabled = !item.enabled;
+            keybind.disabled = !item.enabled;
+          });
+
           return (
             <div class={style.keybindItem}>
               <label class={style.keybindToggle}>
-                <input type="checkbox" checked/>
+                <input 
+                  onChange={(ev) => setKeybindEnabled(ev.target.checked, index())} 
+                  type="checkbox" 
+                  ref={toggle}
+                />
               </label>
-              <input class={style.keybindActionId} type="text" value={item.action} />
+              <input 
+                onChange={(ev) => setKeybindActionId(ev, index())} 
+                class={style.keybindActionId} 
+                type="text" 
+                value={item.action} 
+                ref={actionId}
+              />
               <button 
                 class={style.keybindKeyCombo} 
                 onClick={(ev) => beginRebind(ev, index())}
+                ref={keybind}
               >
                 {translateInputCodes(item.keyCombo).join(` + `).toUpperCase()}
               </button>
