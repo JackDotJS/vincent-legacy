@@ -41,16 +41,18 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
 
     button.innerText = `...`;
 
-    const cancelFunction = (ev: KeyboardEvent): void => {
-      if (ev.code !== `Escape` && ev.code !== `MetaLeft` && ev.code !== `MetaRight`) return;
-
+    const cancelFunction = (): void => {
       setListening(false);
       enableDefaults();
       button.innerText = oldText;
       offKeyCombo(keyComboListener);
     }
 
-    window.addEventListener(`keydown`, cancelFunction);
+    window.addEventListener(`keydown`, (ev: KeyboardEvent) => {
+      if ([`Escape`, `MetaLeft`, `MetaRight`].includes(ev.code)) return;
+      cancelFunction()
+    });
+    window.addEventListener(`blur`, cancelFunction);
 
     keyComboListener = onKeyCombo((keyCombo) => {
       setListening(false);
