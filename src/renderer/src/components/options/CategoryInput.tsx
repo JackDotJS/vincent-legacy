@@ -15,6 +15,8 @@ interface KeybindItem {
 const kblayout = await navigator.keyboard.getLayoutMap();
 
 // TODO: action categories
+// TODO: import/export keymaps
+// TODO: search function
 const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStoreFunction<VincentConfig> }): JSXElement => {
   const { dictionary } = useContext(StateContext);
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
@@ -124,10 +126,10 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
   return (
     <>
       <div classList={{ [style.disableClicks]: listening() }} />
-      <input placeholder={t(`options.input.searchKb`)} type="text" />
+      <input placeholder={t(`options.input.search`)} type="text" />
       <div class={style.columnNames}>
-        <span class={style.columnActionName}>Action</span>
-        <span class={style.columnKeybind}>Keybind</span>
+        <span class={style.columnActionName}>{t(`options.input.actionColumn`)}</span>
+        <span class={style.columnKeybind}>{t(`options.input.keybindColumn`)}</span>
       </div>
       <For each={props.newConfig.keymap}>
         {(item: KeybindItem, index) => {

@@ -10,7 +10,9 @@
     },
     "input": {
       "title": "Input",
-      "searchKb": "Search Key-bindings"
+      "search": "Search Keybindings",
+      "actionColumn": "Action",
+      "keybindColumn": "Keybind"
     },
     "themes": {
       "title": "Themes"
