@@ -3,7 +3,7 @@ import { state } from "../state/StateController";
 
 interface InputListener {
   listenerId: string,
-  callback: (keycombo: string[]) => void
+  callback: (keyCombo: string[]) => void
 }
 
 const kblayout = await navigator.keyboard.getLayoutMap();
@@ -18,6 +18,8 @@ const emitKeyCombo = (keycombo = currentKeyCombo): void => {
   for (const listener of listeners) {
     listener.callback(keycombo);
   }
+
+  //console.debug(`new keyCombo`, keycombo, listeners);
 
   if (!state.optionsOpen) {
     // TODO: go through keymappings list and emit for each match
@@ -99,14 +101,17 @@ window.addEventListener(`keydown`, (ev: KeyboardEvent) => {
   if (preventAllDefaults && ev.cancelable && !ev.defaultPrevented) {
     ev.preventDefault();
   }
+  
   if (ev.repeat) return;
 
   const keycode = kblayout.get(ev.code) ?? ev.code;
-  const keycodeTranslated = translateKey(keycode);
+  const keycodeTranslated = translateKey(keycode).toLowerCase();
+
+  if (keycodeTranslated === `escape` || keycodeTranslated === `meta`) return;
 
   currentKeyCombo.push(keycodeTranslated.toLowerCase());
 
-  if (![`shift`, `ctrl`, `alt`, `meta`].includes(keycodeTranslated)) emitKeyCombo();
+  if (![`shift`, `ctrl`, `alt`].includes(keycodeTranslated)) emitKeyCombo();
 });
 
 window.addEventListener(`keyup`, (ev: KeyboardEvent) => {
@@ -115,7 +120,7 @@ window.addEventListener(`keyup`, (ev: KeyboardEvent) => {
   }
 
   const keycode = kblayout.get(ev.code) ?? ev.code;
-  const keycodeTranslated = translateKey(keycode);
+  const keycodeTranslated = translateKey(keycode).toLowerCase();
 
   removeFromCombo(keycodeTranslated);
 });
@@ -146,7 +151,7 @@ window.addEventListener(`wheel`, (ev: WheelEvent) => {
     ev.preventDefault();
   }
 
-  console.debug(ev.deltaX, ev.deltaY, ev.deltaZ);
+  // console.debug(ev.deltaX, ev.deltaY, ev.deltaZ);
 
   let direction = ``;
 
@@ -169,9 +174,15 @@ window.addEventListener(`wheel`, (ev: WheelEvent) => {
 
 window.addEventListener(`blur`, () => {
   currentKeyCombo = [];
+  console.debug(`window lost focus`);
 });
 
-export const onKeyCombo = (callback: () => void): string => {
+window.addEventListener(`focus`, () => {
+  currentKeyCombo = [];
+  console.debug(`window gained focus`);
+});
+
+export const onKeyCombo = (callback: InputListener[`callback`]): string => {
   const listenerId = createUniqueId();
 
   listeners.push({
@@ -179,6 +190,7 @@ export const onKeyCombo = (callback: () => void): string => {
     callback
   });
 
+  console.debug(`keycombo listener registered:`, listenerId);
   return listenerId;
 };
 

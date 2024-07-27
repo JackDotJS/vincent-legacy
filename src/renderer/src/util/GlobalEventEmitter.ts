@@ -26,7 +26,7 @@ export const emit = (actionId: string, target?: Element): void => {
 export const subscribeEvent = (actionId: string, target: Element|null, callback: () => void): string => {
   const listenerId = createUniqueId();
   listeners.push({ listenerId, actionId, target, callback });
-  console.debug(`keycombo target registered: `, listenerId, target);
+  console.debug(`event listener registered: `, listenerId, target);
   return listenerId;
 };
 
