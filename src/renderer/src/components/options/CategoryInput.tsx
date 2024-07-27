@@ -1,8 +1,10 @@
 import { For, JSXElement, createSignal, onMount, useContext } from 'solid-js';
+import { createStore } from 'solid-js/store';
 import { StateContext } from '../../state/StateController';
+import { disableDefaults, enableDefaults, offKeyCombo, onKeyCombo } from '../../util/InputListener';
+
 import * as i18n from '@solid-primitives/i18n';
 import style from './CategoryInput.module.css';
-import { createStore } from 'solid-js/store';
 
 interface KeybindItem {
   action: string,
@@ -13,8 +15,6 @@ interface KeybindItem {
 
 // TODO: highlight keybind button when activing rebinding
 // TODO: ability to delete and create new keybinds, probably just gonna copy blender's solution to this
-// TODO: move a bunch of this input capturing logic to its own module
-// TODO: fix reactivity regarding keybind changes (may still need to use button innertext thing)
 // TODO: save/load keybinds to/from config
 // TODO: action categories
 const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JSXElement => {
@@ -29,33 +29,52 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
   ]);
   const [ listening, setListening ] = createSignal(false);
 
-  // let targetIndex: number | null = null;
-  // let currentKeyCombo: string[] = [];
+  let keyComboListener = ``;
 
-  // const beginRebind = (index: number): void => {
-  //   setListening(true);
-  //   targetIndex = index;
+  const beginRebind = (ev: MouseEvent, index: number): void => {
+    if (ev.target == null) return;
+    const button = ev.target as HTMLButtonElement;
+    setListening(true);
+    disableDefaults();
 
-  //   console.debug(`begin rebind`);
-  // };
+    const oldText = button.innerText;
 
-  // const finishRebind = (ev: MouseEvent|WheelEvent|KeyboardEvent): void => {
-  //   if (!listening() || targetIndex == null) return;
-  //   if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
+    button.innerText = `...`;
 
-  //   setListening(false);
+    const cancelFunction = (ev: KeyboardEvent): void => {
+      if (ev.code !== `Escape` && ev.code !== `MetaLeft` && ev.code !== `MetaRight`) return;
 
-  //   setKeybinds(targetIndex, { 
-  //     action: keybinds[targetIndex].action, 
-  //     keyCombo: currentKeyCombo
-  //   });
+      setListening(false);
+      enableDefaults();
+      button.innerText = oldText;
+      offKeyCombo(keyComboListener);
+    }
 
-  //   console.debug(keybinds);
+    window.addEventListener(`keydown`, cancelFunction);
 
-  //   currentKeyCombo = [];
+    keyComboListener = onKeyCombo((keyCombo) => {
+      setListening(false);
+      enableDefaults();
 
-  //   console.debug(`finish rebind`);
-  // };
+      console.debug(keyCombo);
+
+      setKeybinds(index, {
+        action: keybinds[index].action, 
+        keyCombo: [...keyCombo]
+      });
+
+      button.innerText = keyCombo.join(` + `).toUpperCase();
+
+      offKeyCombo(keyComboListener);
+      window.removeEventListener(`keydown`, cancelFunction);
+
+      console.debug(keybinds);
+
+      console.debug(`finish rebind`);
+    });
+
+    console.debug(`begin rebind`);
+  };
 
   onMount(() => {
     // just to make the warning shut up for now
@@ -71,14 +90,14 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
         <span class={style.kbLegendPrimary}>Keybind</span>
       </div>
       <For each={keybinds}>
-        {(item: KeybindItem) => {
+        {(item: KeybindItem, index) => {
           return (
             <div class={style.kbActionItem}>
               <label>
                 <input type="checkbox" checked/>
               </label>
               <input type="text" value={item.action} />
-              <button /*onClick={() => beginRebind(index())}*/>
+              <button onClick={(ev) => beginRebind(ev, index())}>
                 {item.keyCombo.join(` + `).toUpperCase()}
               </button>
             </div>
