@@ -8,7 +8,7 @@ import { trackDeep } from "@solid-primitives/deep";
 const [ ready, setReady ] = createSignal(false);
 const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(defaultConfig));
 
-const [ state, setState ] = createStore({
+export const [ state, setState ] = createStore({
   optionsOpen: false,
 });
 

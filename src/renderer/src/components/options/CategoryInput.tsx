@@ -9,7 +9,7 @@ interface KeybindItem {
   keyCombo: string[]
 }
 
-const kblayout = await navigator.keyboard.getLayoutMap()
+// const kblayout = await navigator.keyboard.getLayoutMap();
 
 // TODO: highlight keybind button when activing rebinding
 // TODO: ability to delete and create new keybinds, probably just gonna copy blender's solution to this
@@ -22,153 +22,42 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
 
   const [ keybinds, setKeybinds ] = createStore<KeybindItem[]>([
-    { action: `Cut`, keyCombo: [ `ControlLeft`, `x` ] },
-    { action: `Copy`, keyCombo: [ `ControlLeft`, `c` ] },
-    { action: `Paste`, keyCombo: [ `ControlLeft`, `v` ] },
-    { action: `ComplicatedKeybind`, keyCombo: [ `ControlLeft`, `AltLeft`, `ShiftLeft`, `z` ] }
+    { action: `Cut`, keyCombo: [ `Ctrl`, `x` ] },
+    { action: `Copy`, keyCombo: [ `Ctrl`, `c` ] },
+    { action: `Paste`, keyCombo: [ `Ctrl`, `v` ] },
+    { action: `ComplicatedKeybind`, keyCombo: [ `Ctrl`, `Alt`, `Shift`, `z` ] }
   ]);
   const [ listening, setListening ] = createSignal(false);
 
-  let targetIndex: number | null = null;
-  let currentKeyCombo: string[] = [];
+  // let targetIndex: number | null = null;
+  // let currentKeyCombo: string[] = [];
 
-  const beginRebind = (index: number): void => {
-    setListening(true);
-    targetIndex = index;
+  // const beginRebind = (index: number): void => {
+  //   setListening(true);
+  //   targetIndex = index;
 
-    console.debug(`begin rebind`);
-  };
+  //   console.debug(`begin rebind`);
+  // };
 
-  const finishRebind = (ev: MouseEvent|WheelEvent|KeyboardEvent): void => {
-    if (!listening() || targetIndex == null) return;
-    if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
+  // const finishRebind = (ev: MouseEvent|WheelEvent|KeyboardEvent): void => {
+  //   if (!listening() || targetIndex == null) return;
+  //   if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
 
-    setListening(false);
+  //   setListening(false);
 
-    setKeybinds(targetIndex, { 
-      action: keybinds[targetIndex].action, 
-      keyCombo: currentKeyCombo
-    });
+  //   setKeybinds(targetIndex, { 
+  //     action: keybinds[targetIndex].action, 
+  //     keyCombo: currentKeyCombo
+  //   });
 
-    console.debug(keybinds);
+  //   console.debug(keybinds);
 
-    currentKeyCombo = [];
+  //   currentKeyCombo = [];
 
-    console.debug(`finish rebind`);
-  };
-
-  const getShortenedKeyName = (key: string): string => {
-    let newKey: string = key;
-
-    switch (key) {
-      case `ControlLeft`:
-        newKey = `LCtrl`;
-        break;
-      case `ControlRight`:
-        newKey = `RCtrl`;
-        break;
-      case `ShiftLeft`:
-        newKey = `LShift`;
-        break;
-      case `ShiftRight`:
-        newKey = `RShift`;
-        break;
-      case `AltLeft`:
-        newKey = `LAlt`;
-        break;
-      case `AltRight`:
-        newKey = `RAlt`;
-        break;
-    }
-
-    console.debug(key, newKey);
-
-    return newKey;
-  }
+  //   console.debug(`finish rebind`);
+  // };
 
   onMount(() => {
-    document.addEventListener(`keydown`, (ev: KeyboardEvent) => {
-      if (!listening() || targetIndex == null) return;
-      if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
-
-      if ([`Escape`, `MetaLeft`, `MetaRight`].includes(ev.code)) {
-        setListening(false);
-        currentKeyCombo = [];
-        
-        console.debug(`rebind cancelled`);
-        return;
-      }
-
-      if (ev.repeat) return;
-
-      const attemptTranslatedCode = kblayout.get(ev.code);
-
-      const finalCode = attemptTranslatedCode ?? ev.code;
-
-      console.debug(ev.code, finalCode);
-
-      currentKeyCombo.push(finalCode);
-
-      // buttonTarget.innerText = (currentKeyCombo.join(` + `) + ` + ...`).toUpperCase();
-
-      if (finalCode.length === 1 || finalCode === `Space`) finishRebind(ev);
-    });
-
-    document.addEventListener(`keyup`, finishRebind);
-
-    document.addEventListener(`mousedown`, (ev: MouseEvent) => {
-      if (!listening() || targetIndex == null) return;
-      if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
-
-      switch (ev.button) {
-        case 0:
-          currentKeyCombo.push(`Left Mouse`);
-          break;
-        case 1:
-          currentKeyCombo.push(`Middle Mouse`);
-          break;
-        case 2:
-          currentKeyCombo.push(`Right Mouse`);
-          break;
-        case 3:
-          currentKeyCombo.push(`Back`);
-          break;
-        case 4:
-          currentKeyCombo.push(`Forward`);
-          break;
-      }
-
-      finishRebind(ev);
-    });
-
-    document.addEventListener(`contextmenu`, (ev: MouseEvent) => {
-      if (!listening() || targetIndex == null) return;
-      if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
-    });
-
-    document.addEventListener(`wheel`, (ev: WheelEvent) => {
-      if (!listening() || targetIndex == null) return;
-      if (ev.cancelable && !ev.defaultPrevented) ev.preventDefault();
-
-      console.debug(ev.deltaX, ev.deltaY, ev.deltaZ);
-
-      if (ev.deltaX > 0) {
-        currentKeyCombo.push(`MWheelRight`);
-      } else if (ev.deltaX < 0) {
-        currentKeyCombo.push(`MWheelLeft`);
-      }
-
-      if (ev.deltaY > 0) {
-        currentKeyCombo.push(`MWheelDown`);
-      } else if (ev.deltaY < 0) {
-        currentKeyCombo.push(`MWheelUp`);
-      }
-
-      finishRebind(ev);
-    });
-
-    document.addEventListener(`mouseup`, finishRebind);
-
     // just to make the warning shut up for now
     console.debug(props.newConfig, props.setNewConfig);
   });
@@ -182,21 +71,15 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
         <span class={style.kbLegendPrimary}>Keybind</span>
       </div>
       <For each={keybinds}>
-        {(item: KeybindItem, index) => {
-          const translatedKeys: string[] = [];
-
-          for (const key of item.keyCombo) {
-            translatedKeys.push(getShortenedKeyName(kblayout.get(key) ?? key))
-          }
-
+        {(item: KeybindItem) => {
           return (
             <div class={style.kbActionItem}>
               <label>
                 <input type="checkbox" checked/>
               </label>
               <input type="text" value={item.action} />
-              <button onClick={() => beginRebind(index())}>
-                {translatedKeys.join(` + `).toUpperCase()}
+              <button /*onClick={() => beginRebind(index())}*/>
+                {item.keyCombo.join(` + `).toUpperCase()}
               </button>
             </div>
           )

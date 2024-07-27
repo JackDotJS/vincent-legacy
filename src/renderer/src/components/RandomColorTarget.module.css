@@ -1,0 +1,7 @@
+.randomColorTarget {
+  background-color: grey;
+  width: 10rem;
+  text-align: center;
+  padding: 0.5rem;
+  border: 0.5rem solid black;
+}
