@@ -66,15 +66,13 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
       setListening(false);
       enableDefaults();
 
-      const translated = translateInputCodes(keyCombo);
-
       props.setNewConfig(`keymap`, index, {
         enabled: props.newConfig.keymap[index].enabled,
         action: props.newConfig.keymap[index].action, 
-        keyCombo: translated
+        keyCombo: structuredClone(keyCombo)
       });
 
-      button.innerText = translated.join(` + `).toUpperCase();
+      button.innerText = translateInputCodes(keyCombo).join(` + `).toUpperCase();
       button.classList.remove(style.rebinding);
 
       offKeyCombo(keyComboListener);
