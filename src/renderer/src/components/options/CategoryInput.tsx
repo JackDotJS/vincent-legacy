@@ -11,7 +11,7 @@ interface KeybindItem {
   keyCombo: string[]
 }
 
-// const kblayout = await navigator.keyboard.getLayoutMap();
+const kblayout = await navigator.keyboard.getLayoutMap();
 
 // TODO: highlight keybind button when activing rebinding
 // TODO: ability to delete and create new keybinds, probably just gonna copy blender's solution to this
@@ -31,6 +31,19 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
 
   let keyComboListener = ``;
 
+  const translateInputCodes = (keycombo: string[]): string[] => {
+    const translated: string[] = [];
+
+    for (const item of keycombo) {
+      translated.push(kblayout.get(item) ?? item);
+    }
+
+    console.debug(`before`, keycombo);
+    console.debug(`after`, translated);
+
+    return translated;
+  }
+
   const beginRebind = (ev: MouseEvent, index: number): void => {
     if (ev.target == null) return;
     const button = ev.target as HTMLButtonElement;
@@ -46,10 +59,11 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
       enableDefaults();
       button.innerText = oldText;
       offKeyCombo(keyComboListener);
+      console.debug(`rebind cancelled`);
     }
 
     window.addEventListener(`keydown`, (ev: KeyboardEvent) => {
-      if ([`Escape`, `MetaLeft`, `MetaRight`].includes(ev.code)) return;
+      if (![`Escape`, `MetaLeft`, `MetaRight`].includes(ev.code)) return;
       cancelFunction()
     });
     window.addEventListener(`blur`, cancelFunction);
@@ -58,19 +72,18 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
       setListening(false);
       enableDefaults();
 
-      console.debug(keyCombo);
+      const translated = translateInputCodes(keyCombo);
 
       setKeybinds(index, {
         action: keybinds[index].action, 
-        keyCombo: [...keyCombo]
+        keyCombo: translated
       });
 
-      button.innerText = keyCombo.join(` + `).toUpperCase();
+      button.innerText = translated.join(` + `).toUpperCase();
 
       offKeyCombo(keyComboListener);
       window.removeEventListener(`keydown`, cancelFunction);
-
-      console.debug(keybinds);
+      window.removeEventListener(`blur`, cancelFunction);
 
       console.debug(`finish rebind`);
     });
@@ -100,7 +113,7 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
               </label>
               <input type="text" value={item.action} />
               <button onClick={(ev) => beginRebind(ev, index())}>
-                {item.keyCombo.join(` + `).toUpperCase()}
+                {translateInputCodes(item.keyCombo).join(` + `).toUpperCase()}
               </button>
             </div>
           )

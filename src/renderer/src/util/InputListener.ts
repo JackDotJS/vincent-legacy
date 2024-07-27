@@ -6,8 +6,6 @@ interface InputListener {
   callback: (keyCombo: string[]) => void
 }
 
-const kblayout = await navigator.keyboard.getLayoutMap();
-
 const listeners: InputListener[] = [];
 
 let currentTarget: Element = document.body;
@@ -41,19 +39,19 @@ const translateKey = (input: string): string => {
   switch (input) {
     case `ShiftLeft`:
     case `ShiftRight`:
-      output = `shift`;
+      output = `Shift`;
       break;
     case `ControlLeft`:
     case `ControlRight`:
-      output = `ctrl`;
+      output = `Ctrl`;
       break;
     case `AltLeft`:
     case `AltRight`:
-      output = `alt`;
+      output = `Alt`;
       break;
     case `MetaLeft`:
     case `MetaRight`:
-      output = `meta`;
+      output = `Meta`;
       break;
   }
 
@@ -61,23 +59,23 @@ const translateKey = (input: string): string => {
 };
 
 const translateMouseButton = (input: number): string => {
-  let output = `unknown`;
+  let output = `Unknown`;
 
   switch (input) {
     case 0:
-      output = `leftmouse`;
+      output = `LeftMouse`;
       break;
     case 1:
-      output = `middlemouse`;
+      output = `MiddleMouse`;
       break;
     case 2:
-      output = `rightmouse`;
+      output = `RightMouse`;
       break;
     case 3:
-      output = `back`;
+      output = `Back`;
       break;
     case 4:
-      output = `forward`;
+      output = `Forward`;
       break;
   }
 
@@ -104,14 +102,13 @@ window.addEventListener(`keydown`, (ev: KeyboardEvent) => {
   
   if (ev.repeat) return;
 
-  const keycode = kblayout.get(ev.code) ?? ev.code;
-  const keycodeTranslated = translateKey(keycode).toLowerCase();
+  const keycode = translateKey(ev.code);
 
-  if (keycodeTranslated === `escape` || keycodeTranslated === `meta`) return;
+  if (keycode === `Escape` || keycode === `Meta`) return;
 
-  currentKeyCombo.push(keycodeTranslated.toLowerCase());
+  currentKeyCombo.push(keycode);
 
-  if (![`shift`, `ctrl`, `alt`].includes(keycodeTranslated)) emitKeyCombo();
+  if (![`Shift`, `Ctrl`, `Alt`].includes(keycode)) emitKeyCombo();
 });
 
 window.addEventListener(`keyup`, (ev: KeyboardEvent) => {
@@ -119,10 +116,9 @@ window.addEventListener(`keyup`, (ev: KeyboardEvent) => {
     ev.preventDefault();
   }
 
-  const keycode = kblayout.get(ev.code) ?? ev.code;
-  const keycodeTranslated = translateKey(keycode).toLowerCase();
+  const keycode = translateKey(ev.code);
 
-  removeFromCombo(keycodeTranslated);
+  removeFromCombo(keycode);
 });
 
 window.addEventListener(`mousedown`, (ev: MouseEvent) => {
@@ -132,7 +128,7 @@ window.addEventListener(`mousedown`, (ev: MouseEvent) => {
 
   const translated = translateMouseButton(ev.button);
 
-  currentKeyCombo.push(translated.toLowerCase());
+  currentKeyCombo.push(translated);
 
   emitKeyCombo();
 });
@@ -156,15 +152,15 @@ window.addEventListener(`wheel`, (ev: WheelEvent) => {
   let direction = ``;
 
   if (ev.deltaX > 0) {
-    direction = `mwheelright`;
+    direction = `MWheelRight`;
   } else if (ev.deltaX < 0) {
-    direction = `mwheelleft`;
+    direction = `MWheelLeft`;
   }
 
   if (ev.deltaY > 0) {
-    direction = `mwheeldown`;
+    direction = `MWheelDown`;
   } else if (ev.deltaY < 0) {
-    direction = `mwheelup`;
+    direction = `MWheelUp`;
   }
 
   const modifiedKeyCombo = [...currentKeyCombo, direction];
