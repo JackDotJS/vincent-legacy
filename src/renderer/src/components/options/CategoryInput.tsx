@@ -1,5 +1,5 @@
 import { For, JSXElement, createSignal, onMount, useContext } from 'solid-js';
-import { createStore } from 'solid-js/store';
+import { createStore, SetStoreFunction, unwrap } from 'solid-js/store';
 import { StateContext } from '../../state/StateController';
 import { disableDefaults, enableDefaults, offKeyCombo, onKeyCombo } from '../../util/InputListener';
 
@@ -13,20 +13,12 @@ interface KeybindItem {
 
 const kblayout = await navigator.keyboard.getLayoutMap();
 
-// TODO: highlight keybind button when activing rebinding
-// TODO: ability to delete and create new keybinds, probably just gonna copy blender's solution to this
-// TODO: save/load keybinds to/from config
 // TODO: action categories
-const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JSXElement => {
+const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStoreFunction<VincentConfig> }): JSXElement => {
   const { dictionary } = useContext(StateContext);
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
 
-  const [ keybinds, setKeybinds ] = createStore<KeybindItem[]>([
-    { action: `Cut`, keyCombo: [ `Ctrl`, `x` ] },
-    { action: `Copy`, keyCombo: [ `Ctrl`, `c` ] },
-    { action: `Paste`, keyCombo: [ `Ctrl`, `v` ] },
-    { action: `ComplicatedKeybind`, keyCombo: [ `Ctrl`, `Alt`, `Shift`, `z` ] }
-  ]);
+  const [ keybinds, setKeybinds ] = createStore<KeybindItem[]>(props.newConfig.keymap);
   const [ listening, setListening ] = createSignal(false);
 
   let keyComboListener = ``;
@@ -51,13 +43,15 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
     disableDefaults();
 
     const oldText = button.innerText;
-
     button.innerText = `...`;
+
+    button.classList.add(style.rebinding);
 
     const cancelFunction = (): void => {
       setListening(false);
       enableDefaults();
       button.innerText = oldText;
+      button.classList.remove(style.rebinding);
       offKeyCombo(keyComboListener);
       console.debug(`rebind cancelled`);
     }
@@ -80,6 +74,7 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
       });
 
       button.innerText = translated.join(` + `).toUpperCase();
+      button.classList.remove(style.rebinding);
 
       offKeyCombo(keyComboListener);
       window.removeEventListener(`keydown`, cancelFunction);
@@ -91,35 +86,51 @@ const CategoryInput = (props: { newConfig: unknown, setNewConfig: unknown }): JS
     console.debug(`begin rebind`);
   };
 
+  const removeKeybind = (index: number): void => {
+    setKeybinds((old) => {
+      return old.filter((_item, filterIndex) => index !== filterIndex)
+    });
+  }
+
+  const addNewKeybind = (): void => {
+    setKeybinds((old) => {
+      return old.concat([{ action: ``, keyCombo: [] }])
+    })
+  }
+
   onMount(() => {
     // just to make the warning shut up for now
-    console.debug(props.newConfig, props.setNewConfig);
+    props.setNewConfig(`keymap`, keybinds);
   });
 
   return (
     <>
       <div classList={{ [style.disableClicks]: listening() }} />
       <input placeholder={t(`options.input.searchKb`)} type="text" />
-      <div class={style.kbLegend}>
-        <span class={style.kbLegendTitle}>Action</span>
-        <span class={style.kbLegendPrimary}>Keybind</span>
+      <div class={style.columnNames}>
+        <span class={style.columnActionName}>Action</span>
+        <span class={style.columnKeybind}>Keybind</span>
       </div>
       <For each={keybinds}>
         {(item: KeybindItem, index) => {
           return (
-            <div class={style.kbActionItem}>
-              <label>
+            <div class={style.keybindItem}>
+              <label class={style.keybindToggle}>
                 <input type="checkbox" checked/>
               </label>
-              <input type="text" value={item.action} />
-              <button onClick={(ev) => beginRebind(ev, index())}>
+              <input class={style.keybindActionId} type="text" value={item.action} />
+              <button 
+                class={style.keybindKeyCombo} 
+                onClick={(ev) => beginRebind(ev, index())}
+              >
                 {translateInputCodes(item.keyCombo).join(` + `).toUpperCase()}
               </button>
+              <button class={style.keybindDelete} onClick={() => removeKeybind(index())}>Delete</button>
             </div>
           )
         }}
       </For>
-      <button onClick={() => setKeybinds((old) => old.concat([{ action: ``, keyCombo: [] }]) )}>add new</button>
+      <button onClick={() => addNewKeybind()}>add new</button>
     </>
   );
 };
