@@ -4,7 +4,7 @@ import { DropDownCollectionContext } from './DropDownCollection';
 import style from './DropDown.module.css';
 
 const DropDown = (props: { label: string, children?: JSXElement }): JSXElement => {
-  const { activated, selectedId, setSelectedId, targetElement, setTargetElement } = useContext(DropDownCollectionContext);
+  const { activated, setActivated, selectedId, setSelectedId, targetElement, setTargetElement } = useContext(DropDownCollectionContext);
 
   const buttonId = createUniqueId();
   let lastTarget: Element|null = null;
@@ -40,6 +40,11 @@ const DropDown = (props: { label: string, children?: JSXElement }): JSXElement =
     startCountdown();
   };
 
+  const clickHandler = (): void => {
+    setActivated(true);
+    updateSelected();
+  };
+
   return (
     <>
       <button 
@@ -47,7 +52,7 @@ const DropDown = (props: { label: string, children?: JSXElement }): JSXElement =
         onPointerOver={() => updateSelected()}
         classList={{ [style.opened]: activated() && isSelected() }}
         onPointerMove={(ev) => movement(ev)}
-        // onClick={() => cancelCountdown()}
+        onClick={() => clickHandler()}
       >
         {props.label}
         <Show when={activated() && isSelected()}>
