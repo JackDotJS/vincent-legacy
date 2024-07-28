@@ -18,7 +18,10 @@ const DropDown = (props: { label: string, children?: JSXElement }): JSXElement =
 
   return (
     <>
-      <button class={style.dropdownButton} onPointerOver={() => updateSelected()}>
+      <button 
+        class={style.dropdownButton} 
+        onPointerOver={() => updateSelected()}
+        classList={{ [style.opened]: activated() && isSelected() }}>
         {props.label}
         <Show when={activated() && isSelected()}>
           <div class={style.dropdownMenu}>

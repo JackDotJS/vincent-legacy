@@ -2,12 +2,14 @@ import { Accessor, createContext, createSignal, JSXElement, onMount, Setter } fr
 
 interface DropDownCollectionData {
   activated: Accessor<boolean>,
+  setActivated: Setter<boolean>,
   selectedId: Accessor<string>,
   setSelectedId: Setter<string>,
 }
 
 export const DropDownCollectionContext = createContext<DropDownCollectionData>({
   activated: () => false,
+  setActivated: () => {},
   selectedId: () => `0`,
   setSelectedId: () => {}
 });
@@ -20,6 +22,7 @@ export const DropDownCollection = (props: { children: JSXElement }): JSXElement 
 
   const data: DropDownCollectionData = {
     activated,
+    setActivated,
     selectedId,
     setSelectedId,
   };

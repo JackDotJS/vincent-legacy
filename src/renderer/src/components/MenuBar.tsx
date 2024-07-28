@@ -3,9 +3,10 @@ import { StateContext } from '../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 import { DropDownCollection } from './common/DropDownCollection';
 import DropDown from './common/DropDown';
+import MenuButton from './common/MenuButton';
 
 const MenuBar = (): JSXElement => {
-  const { setState, dictionary } = useContext(StateContext);
+  const { dictionary } = useContext(StateContext);
 
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
 
@@ -13,12 +14,14 @@ const MenuBar = (): JSXElement => {
     <>
       <DropDownCollection>
         <DropDown label="File">
-          <button>New</button>
-          <button>Save</button>
-          <button>Save As</button>
+          <MenuButton label="New..." />
+          <MenuButton label="Save" />
+          <MenuButton label="Save As..." />
+          <MenuButton label="Exit" />
         </DropDown>
         <DropDown label="Edit">
-          <button onClick={() => setState(`optionsOpen`, true) }>{t(`options.title`)}</button>
+          <MenuButton label={t(`options.title`)} actionId="menu.options.open"/>
+          {/* <button onClick={() => setState(`optionsOpen`, true) }>{t(`options.title`)}</button> */}
         </DropDown>
         <DropDown label="View">
           {/** todo */}
