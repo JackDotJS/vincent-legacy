@@ -37,6 +37,10 @@
   transition: background-color 100ms ease-in-out;
 }
 
+:where(.menuButton, .subMenuButton) span {
+  pointer-events: none;
+}
+
 .subMenuButton > .dropdownMenu {
   top: 0;
   left: 100%;
