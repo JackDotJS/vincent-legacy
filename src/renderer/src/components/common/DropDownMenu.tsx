@@ -34,6 +34,7 @@ const DropDown = (props: { label: string, children?: JSXElement }): JSXElement =
   const movement = (ev: PointerEvent): void => {
     if (ev.target == null) return;
     if (!(activated() && isSelected())) return;
+    if (lastTarget === ev.target) return;
     lastTarget = ev.target as Element;
     cancelCountdown();
     startCountdown();
