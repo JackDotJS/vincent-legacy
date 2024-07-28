@@ -47,6 +47,8 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
       window.electron.writeConfig(unwrap(config));
     }, readConfig);
 
+    import(`./StateEventListeners`);
+
     setReady(true);
   });
 
