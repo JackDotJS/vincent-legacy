@@ -1,6 +1,6 @@
 import { createUniqueId } from "solid-js";
 import { config, state } from "../state/StateController";
-import { emit } from "./GlobalEventEmitter";
+import { emit } from "../state/GlobalEventEmitter";
 
 interface InputListener {
   listenerId: string,
