@@ -2,8 +2,9 @@ import { JSXElement, useContext } from 'solid-js';
 import { StateContext } from '../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 import { DropDownCollection } from './common/DropDownCollection';
-import DropDown from './common/DropDown';
+import DropDownMenu from './common/DropDownMenu';
 import MenuButton from './common/MenuButton';
+import SubMenu from './common/SubMenu';
 
 const MenuBar = (): JSXElement => {
   const { dictionary } = useContext(StateContext);
@@ -13,31 +14,47 @@ const MenuBar = (): JSXElement => {
   return (
     <>
       <DropDownCollection>
-        <DropDown label="File">
+        <DropDownMenu label="File">
           <MenuButton label="New..." />
+          <MenuButton label="Open..." />
+          <SubMenu label="Open Recent">
+            <MenuButton label="example1.vcnt" />
+            <MenuButton label="example2.vcnt" />
+            <MenuButton label="example3.vcnt" />
+            <SubMenu label="submenu test">
+              <MenuButton label="test1" />
+              <MenuButton label="test2" />
+              <MenuButton label="test3" />
+            </SubMenu>
+            <SubMenu label="submenu test2">
+              <MenuButton label="test1" />
+              <MenuButton label="test2" />
+              <MenuButton label="test3" />
+            </SubMenu>
+          </SubMenu>
           <MenuButton label="Save" />
           <MenuButton label="Save As..." />
-          <MenuButton label="Exit" />
-        </DropDown>
-        <DropDown label="Edit">
+          
+          <MenuButton label="Exit" actionId="app.exit"/>
+        </DropDownMenu>
+        <DropDownMenu label="Edit">
           <MenuButton label={t(`options.title`)} actionId="menu.options.open"/>
-          {/* <button onClick={() => setState(`optionsOpen`, true) }>{t(`options.title`)}</button> */}
-        </DropDown>
-        <DropDown label="View">
+        </DropDownMenu>
+        <DropDownMenu label="View">
           {/** todo */}
-        </DropDown>
-        <DropDown label="Image">
+        </DropDownMenu>
+        <DropDownMenu label="Image">
           {/** todo */}
-        </DropDown>
-        <DropDown label="Layers">
+        </DropDownMenu>
+        <DropDownMenu label="Layers">
           {/** todo */}
-        </DropDown>
-        <DropDown label="Effects">
+        </DropDownMenu>
+        <DropDownMenu label="Effects">
           {/** todo */}
-        </DropDown>
-        <DropDown label="Help">
+        </DropDownMenu>
+        <DropDownMenu label="Help">
           <button onClick={() => window.location.replace(`https://github.com/JackDotJS/vincent`)} >GitHub</button>
-        </DropDown>
+        </DropDownMenu>
       </DropDownCollection>
     </>
   );
