@@ -23,6 +23,7 @@
 }
 
 .menuButton, .subMenuButton {
+  background-color: transparent;
   position: relative;
   display: flex;
   flex-direction: row;
