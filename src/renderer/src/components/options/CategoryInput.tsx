@@ -1,7 +1,7 @@
 import { For, JSXElement, createEffect, createSignal, useContext } from 'solid-js';
 import { SetStoreFunction, unwrap } from 'solid-js/store';
 import { StateContext } from '../../state/StateController';
-import { disableDefaults, enableDefaults, offKeyCombo, onKeyCombo } from '../../util/InputListener';
+import { disableDefaults, enableDefaults, offKeyCombo, onKeyCombo } from '../../util/keyComboListener';
 
 import * as i18n from '@solid-primitives/i18n';
 import style from './CategoryInput.module.css';
