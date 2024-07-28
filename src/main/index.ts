@@ -20,6 +20,11 @@ function createWindow(): void {
   });
 
   mainWindow.webContents.on(`will-navigate`, (event) => {
+    console.debug(event);
+
+    const url = new URL(event.url);
+    if (url.hostname === `localhost`) return;
+
     event.preventDefault();
     shell.openExternal(event.url);
   });
