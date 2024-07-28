@@ -4,6 +4,7 @@ import { JSXElement } from 'solid-js';
 import OptionsWrapper from './components/options/OptionsWrapper';
 // import RandomColorTarget from './components/RandomColorTarget';
 import MenuBar from './components/MenuBar';
+import ViewPort from './components/viewport/ViewPort';
 // import { DropDownCollection } from './components/common/DropDownCollection';
 // import DropDown from './components/common/DropDown';
 
@@ -25,6 +26,7 @@ const App = (): JSXElement => {
           <button>test2</button>
         </DropDown>
       </DropDownCollection> */}
+      <ViewPort />
       <OptionsWrapper/>
     </>
   );
