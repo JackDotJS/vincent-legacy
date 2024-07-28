@@ -17,6 +17,7 @@
   min-width: 10rem;
   max-width: 20rem;
   box-sizing: border-box;
+  background-color: white;
   border: 2px solid lightgray;
   padding: 0.25rem 0;
 }
