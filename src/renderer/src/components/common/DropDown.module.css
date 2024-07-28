@@ -5,7 +5,7 @@
   background-color: white;
   font-size: 14px;
   padding: 0.25rem 0.5rem;
-  transition: background-color 100ms ease-in-out;
+  transition: background-color 50ms ease-in-out;
 }
 
 .dropdownMenu {
@@ -19,7 +19,6 @@
   box-sizing: border-box;
   border: 2px solid lightgray;
   padding: 0.25rem 0;
-  /* box-shadow: rgba(0,0,0,0.15) 0px 3px 16px; */
 }
 
 .menuButton, .subMenuButton {
@@ -34,7 +33,7 @@
   text-wrap: nowrap;
   border: none;
   padding: 0.5rem 0.5rem;
-  transition: background-color 100ms ease-in-out;
+  transition: background-color 50ms ease-in-out;
 }
 
 :where(.menuButton, .subMenuButton) span {
