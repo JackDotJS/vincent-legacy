@@ -97,14 +97,12 @@ const ViewPort = (): JSXElement => {
       setDrawing(false);
     });
 
-    window.addEventListener(`pointerout`, () => {
-      // if (ev.pointerType === `pen`) setDrawing(false);
-      setDrawing(false);
+    window.addEventListener(`pointerout`, (ev: PointerEvent) => {
+      if (ev.pointerType === `pen`) setDrawing(false);
     });
 
-    window.addEventListener(`pointerleave`, () => {
-      // if (ev.pointerType === `pen`) setDrawing(false);
-      setDrawing(false);
+    window.addEventListener(`pointerleave`, (ev: PointerEvent) => {
+      if (ev.pointerType === `pen`) setDrawing(false);
     });
 
     window.addEventListener(`pointercancel`, () => {
