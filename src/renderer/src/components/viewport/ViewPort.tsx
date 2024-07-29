@@ -52,11 +52,19 @@ const ViewPort = (): JSXElement => {
         } else {
           ctx.globalCompositeOperation = `source-over`;
         }
+
+        let size = brushSize();
+
+        // ev.pressure is always either 0 or 0.5 for other pointer types
+        // so we only use it if an actual pen is being used
+        if (ev.pointerType === `pen`) {
+          size = ev.pressure * brushSize();
+        }
         
         ctx.beginPath();
         ctx.moveTo(lastPosX, lastPosY);
         ctx.strokeStyle = brushColor();
-        ctx.lineWidth = brushSize();
+        ctx.lineWidth = size;
         ctx.lineCap = `round`;
         ctx.lineTo(curPosX, curPosY);
         ctx.stroke();
