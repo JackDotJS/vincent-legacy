@@ -2,6 +2,10 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 
+// FIXME: there might be a better solution for the inaccurate colors problem
+// or at the very least this should be configurable
+app.commandLine.appendSwitch('force-color-profile', 'srgb');
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 900,
