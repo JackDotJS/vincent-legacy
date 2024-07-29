@@ -11,6 +11,7 @@ const ViewPort = (): JSXElement => {
 
   let lastPosX = 0;
   let lastPosY = 0;
+  let lastSize = brushSize();
 
   let cursorElem!: HTMLDivElement;
   let canvasElem!: HTMLCanvasElement;
@@ -37,11 +38,23 @@ const ViewPort = (): JSXElement => {
   };
 
   const updateCursor = (ev: PointerEvent): void => {
+    cursorElem.style.top = ev.pageY + `px`;
+    cursorElem.style.left = ev.pageX + `px`;
+    cursorElem.style.width = brushSize() + `px`;
+    cursorElem.style.height = brushSize() + `px`;
+
     // console.debug(ev.pageX, ev.pageY);
     const canvasBox = canvasElem.getBoundingClientRect();
 
     const curPosX = ev.pageX - canvasBox.left;
     const curPosY = ev.pageY - canvasBox.top;
+    let curSize = brushSize();
+
+    // ev.pressure is always either 0 or 0.5 for other pointer types
+    // so we only use it if an actual pen is being used
+    if (ev.pointerType === `pen`) {
+      curSize = ev.pressure * brushSize();
+    }
 
     if (drawing()) {
       const ctx = canvasElem.getContext(`2d`);
@@ -53,31 +66,35 @@ const ViewPort = (): JSXElement => {
           ctx.globalCompositeOperation = `source-over`;
         }
 
-        let size = brushSize();
+        const dx = (lastPosX - curPosX);
+        const dy = (lastPosY - curPosY);
+        const steps = Math.hypot(dx, dy);
 
-        // ev.pressure is always either 0 or 0.5 for other pointer types
-        // so we only use it if an actual pen is being used
-        if (ev.pointerType === `pen`) {
-          size = ev.pressure * brushSize();
+        for (let i = 1; i < steps; i++) {
+          const stepLengthX = dx * (i / steps);
+          const stepLengthY = dy * (i / steps);
+
+          const mx = lastPosX - stepLengthX;
+          const my = lastPosY - stepLengthY;
+          const ms = ((lastSize) - (curSize)) * (1 - (i / steps)) + (curSize);
+
+          ctx.beginPath();
+          ctx.fillStyle = brushColor();
+          ctx.arc(mx, my, ms / 2, 0, 2 * Math.PI);
+          ctx.fill();
         }
         
+        // draw end circle
         ctx.beginPath();
-        ctx.moveTo(lastPosX, lastPosY);
-        ctx.strokeStyle = brushColor();
-        ctx.lineWidth = size;
-        ctx.lineCap = `round`;
-        ctx.lineTo(curPosX, curPosY);
-        ctx.stroke();
+        ctx.fillStyle = brushColor();
+        ctx.arc(curPosX, curPosY, curSize / 2, 0, 2 * Math.PI);
+        ctx.fill();
       }
     }
 
-    cursorElem.style.top = ev.pageY + `px`;
-    cursorElem.style.left = ev.pageX + `px`;
-    cursorElem.style.width = brushSize() + `px`;
-    cursorElem.style.height = brushSize() + `px`;
-
     lastPosX = curPosX;
     lastPosY = curPosY;
+    lastSize = curSize;
   };
 
   onMount(() => {
