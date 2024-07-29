@@ -18,18 +18,20 @@
   position: fixed;
   aspect-ratio: 1;
   border-radius: 100%;
-  border: 1px solid black;
   box-sizing: border-box;
   transform: translate(-50%, -50%);
+  backdrop-filter: invert();
+  mask-image: radial-gradient(closest-side, #000 calc(100% - 1.5px), #FFF 100%);
+  mask-mode: luminance;
 }
 
 .brushCursor:not(.cursorVisible) {
   display: none;
 }
 
-.canvasWrapper {
+/* .canvasWrapper {
   cursor: none;
-}
+} */
 
 .canvas {
   touch-action: none;
