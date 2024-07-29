@@ -81,8 +81,16 @@ const ViewPort = (): JSXElement => {
       updateCursor(ev);
     });
 
+    window.addEventListener(`pointermove`, (ev) => {
+      updateCursor(ev);
+    });
+
     window.addEventListener(`pointerup`, () => {
       setDrawing(false);
+    });
+
+    window.addEventListener(`pointerout`, (ev: PointerEvent) => {
+      if (ev.pointerType === `pen`) setDrawing(false);
     });
   });
 
@@ -112,8 +120,7 @@ const ViewPort = (): JSXElement => {
         </label>
       </div>
       <div 
-        class={style.canvasWrapper} 
-        onPointerMove={(ev) => updateCursor(ev)} 
+        class={style.canvasWrapper}
         onPointerEnter={() => setCursorVisible(true)}
         onPointerLeave={() => setCursorVisible(false)}
         ref={canvasWrapperElem}
