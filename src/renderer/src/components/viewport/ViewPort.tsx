@@ -6,6 +6,8 @@ const ViewPort = (): JSXElement => {
   const [ brushSize, setBrushSize ] = createSignal(10);
   const [ cursorVisible, setCursorVisible ] = createSignal(false);
   const [ drawing, setDrawing ] = createSignal(false);
+  const [ brushColor, setBrushColor ] = createSignal(`rgba(0, 0, 0, 1)`);
+  const [ eraserMode, setEraserMode ] = createSignal(false);
 
   let lastPosX = 0;
   let lastPosY = 0;
@@ -45,8 +47,15 @@ const ViewPort = (): JSXElement => {
       const ctx = canvasElem.getContext(`2d`);
 
       if (ctx != null) {
+        if (eraserMode()) {
+          ctx.globalCompositeOperation = `destination-out`;
+        } else {
+          ctx.globalCompositeOperation = `source-over`;
+        }
+        
         ctx.beginPath();
         ctx.moveTo(lastPosX, lastPosY);
+        ctx.strokeStyle = brushColor();
         ctx.lineWidth = brushSize();
         ctx.lineCap = `round`;
         ctx.lineTo(curPosX, curPosY);
@@ -80,6 +89,7 @@ const ViewPort = (): JSXElement => {
   return (
     <div class={style.viewport}>
       <div class={style.tempControls}>
+        <h4>WARNING: CHANGING CANVAS SIZE WILL RESET CANVAS DATA</h4>
         <label>
           width:
           <input type="number" onChange={(ev) => setWidth(ev.target.value)} ref={widthElem} />
@@ -91,6 +101,14 @@ const ViewPort = (): JSXElement => {
         <label>
           brush size: 
           <input type="number" value={brushSize()} onChange={(ev) => setBrushSize(parseInt(ev.target.value))} />
+        </label>
+        <label>
+          brush color: 
+          <input type="text" value={brushColor()} onChange={(ev) => setBrushColor(ev.target.value)} />
+        </label>
+        <label>
+          eraser mode: 
+          <input type="checkbox" onChange={(ev) => setEraserMode(ev.target.checked)} />
         </label>
       </div>
       <div 
