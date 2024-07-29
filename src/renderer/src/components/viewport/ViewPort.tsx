@@ -92,6 +92,14 @@ const ViewPort = (): JSXElement => {
     window.addEventListener(`pointerout`, (ev: PointerEvent) => {
       if (ev.pointerType === `pen`) setDrawing(false);
     });
+
+    window.addEventListener(`pointerleave`, (ev: PointerEvent) => {
+      if (ev.pointerType === `pen`) setDrawing(false);
+    });
+
+    window.addEventListener(`pointercancel`, () => {
+      setDrawing(false);
+    });
   });
 
   return (
