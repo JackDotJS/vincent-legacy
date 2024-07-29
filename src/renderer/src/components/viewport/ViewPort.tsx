@@ -6,7 +6,7 @@ const ViewPort = (): JSXElement => {
   const [ brushSize, setBrushSize ] = createSignal(10);
   const [ cursorVisible, setCursorVisible ] = createSignal(false);
   const [ drawing, setDrawing ] = createSignal(false);
-  const [ brushColor, setBrushColor ] = createSignal(`rgba(0, 0, 0, 1)`);
+  const [ brushColor, setBrushColor ] = createSignal(`#000000`);
   const [ eraserMode, setEraserMode ] = createSignal(false);
 
   let lastPosX = 0;
@@ -120,7 +120,7 @@ const ViewPort = (): JSXElement => {
         </label>
         <label>
           brush color: 
-          <input type="text" value={brushColor()} onChange={(ev) => setBrushColor(ev.target.value)} />
+          <input type="color" value={brushColor()} onChange={(ev) => setBrushColor(ev.target.value)} />
         </label>
         <label>
           eraser mode: 
