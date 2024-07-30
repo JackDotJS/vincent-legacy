@@ -17,6 +17,7 @@ const kblayout = await navigator.keyboard.getLayoutMap();
 // TODO: action categories
 // TODO: import/export keymaps
 // TODO: search function
+// TODO: highlight conflicting keybinds
 const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStoreFunction<VincentConfig> }): JSXElement => {
   const { dictionary } = useContext(StateContext);
   const t = i18n.translator(() => dictionary(), i18n.resolveTemplate) as Translator;
@@ -36,7 +37,7 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
     // console.debug(`after`, translated);
 
     return translated;
-  }
+  };
 
   const beginRebind = (ev: MouseEvent, index: number): void => {
     if (ev.target == null) return;
@@ -56,11 +57,11 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
       button.classList.remove(style.rebinding);
       offKeyCombo(keyComboListener);
       console.debug(`rebind cancelled`);
-    }
+    };
 
     window.addEventListener(`keydown`, (ev: KeyboardEvent) => {
       if (![`Escape`, `MetaLeft`, `MetaRight`].includes(ev.code)) return;
-      cancelFunction()
+      cancelFunction();
     });
     window.addEventListener(`blur`, cancelFunction);
 
@@ -91,7 +92,7 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
     const oldKeymap = structuredClone(unwrap(props.newConfig.keymap));
     const filtered = oldKeymap.filter((_item, filterIndex) => index !== filterIndex)
     props.setNewConfig(`keymap`, filtered);
-  }
+  };
 
   const addNewKeybind = (): void => {
     props.setNewConfig(`keymap`, (currentKeymap) => [
@@ -102,7 +103,7 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
         keyCombo: [] 
       }
     ]);
-  }
+  };
 
   const setKeybindEnabled = (enabled: boolean, index: number): void => {
     props.setNewConfig(`keymap`, index, {
@@ -110,7 +111,7 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
       action: props.newConfig.keymap[index].action, 
       keyCombo: props.newConfig.keymap[index].keyCombo
     });
-  }
+  };
 
   const setKeybindActionId = (ev: Event, index: number): void => {
     if (ev.target == null) return;
@@ -171,7 +172,7 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
               </button>
               <button class={style.keybindDelete} onClick={() => removeKeybind(index())}>Delete</button>
             </div>
-          )
+          );
         }}
       </For>
       <button onClick={() => addNewKeybind()}>add new</button>

@@ -1,6 +1,13 @@
 import { createSignal, JSXElement, onMount } from 'solid-js';
 
 import style from './ViewPort.module.css';
+import { subscribeEvent } from '@renderer/state/GlobalEventEmitter';
+
+interface HistoryItem {
+  data: ImageData,
+  x: number,
+  y: number
+}
 
 const ViewPort = (): JSXElement => {
   const [ brushSize, setBrushSize ] = createSignal(10);
@@ -8,13 +15,26 @@ const ViewPort = (): JSXElement => {
   const [ drawing, setDrawing ] = createSignal(false);
   const [ brushColor, setBrushColor ] = createSignal(`#000000`);
   const [ eraserMode, setEraserMode ] = createSignal(false);
+  const [ historyStep, setHistoryStep ] = createSignal(0);
 
   let lastPosX = 0;
   let lastPosY = 0;
   let lastSize = brushSize();
 
-  let cursorElem!: HTMLDivElement;
+  const bbox = {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0
+  };
+
+  const history: HistoryItem[] = [];
+
   let canvasElem!: HTMLCanvasElement;
+  let preCanvasElem!: HTMLCanvasElement;
+  let debugCanvasElem!: HTMLCanvasElement;
+
+  let cursorElem!: HTMLDivElement;
   let canvasWrapperElem!: HTMLDivElement;
   let widthElem!: HTMLInputElement;
   let heightElem!: HTMLInputElement;
@@ -29,10 +49,18 @@ const ViewPort = (): JSXElement => {
     const valAsNumber = validateNumber(value);
     canvasElem.width = valAsNumber;
     canvasElem.style.width = valAsNumber + `px`;
+    preCanvasElem.width = valAsNumber;
+    preCanvasElem.style.width = valAsNumber + `px`;
+    canvasElem.width = valAsNumber;
+    canvasElem.style.width = valAsNumber + `px`;
   };
 
   const setHeight = (value: string): void => {
     const valAsNumber = validateNumber(value);
+    canvasElem.height = valAsNumber;
+    canvasElem.style.height = valAsNumber + `px`;
+    preCanvasElem.height = valAsNumber;
+    preCanvasElem.style.height = valAsNumber + `px`;
     canvasElem.height = valAsNumber;
     canvasElem.style.height = valAsNumber + `px`;
   };
@@ -57,7 +85,20 @@ const ViewPort = (): JSXElement => {
     }
 
     if (drawing()) {
-      const ctx = canvasElem.getContext(`2d`);
+      // update bounding box data
+
+      const brushMargin = ((curSize / 2) + 1);
+      const maxTop = (curPosY - brushMargin);
+      const maxLeft = (curPosX - brushMargin);
+      const maxRight = (curPosX + brushMargin);
+      const maxBottom = (curPosY + brushMargin);
+
+      if (maxTop < bbox.top) bbox.top = maxTop;
+      if (maxLeft < bbox.left) bbox.left = maxLeft;
+      if (maxRight > bbox.right) bbox.right = maxRight;
+      if (maxBottom > bbox.bottom) bbox.bottom = maxBottom;
+
+      const ctx = preCanvasElem.getContext(`2d`);
 
       if (ctx != null) {
         if (eraserMode()) {
@@ -97,34 +138,139 @@ const ViewPort = (): JSXElement => {
     lastSize = curSize;
   };
 
+  const startDrawing = (ev: PointerEvent): void => {
+    const canvasBox = canvasElem.getBoundingClientRect();
+    bbox.top = ev.pageY - canvasBox.top;
+    bbox.left = ev.pageX - canvasBox.left;
+    bbox.right = ev.pageX - canvasBox.left;
+    bbox.bottom = ev.pageY - canvasBox.top;
+
+    setDrawing(true);
+    updateCursor(ev);
+  };
+
+  const finishDrawing = (): void => {
+    if (!drawing()) return;
+    setDrawing(false);
+
+    const ctxMain = canvasElem.getContext(`2d`);
+    const ctxPre = preCanvasElem.getContext(`2d`);
+    const ctxDebug = debugCanvasElem.getContext(`2d`);
+
+    if (ctxMain == null || ctxPre == null || ctxDebug == null) return;
+
+    // clamp bounding box to canvas bounds
+    bbox.top = Math.min(canvasElem.height, Math.max(bbox.top, 0));
+    bbox.left = Math.min(canvasElem.width, Math.max(bbox.left, 0));
+    bbox.right = Math.min(canvasElem.width, Math.max(bbox.right, 0));
+    bbox.bottom = Math.min(canvasElem.height, Math.max(bbox.bottom, 0));
+
+    const bboxWidth = Math.abs(bbox.right - bbox.left);
+    const bboxHeight = Math.abs(bbox.bottom - bbox.top);
+
+    const beforeData = ctxMain.getImageData(
+      bbox.left, 
+      bbox.top, 
+      bboxWidth, 
+      bboxHeight
+    );
+
+    ctxMain.drawImage(preCanvasElem, 0, 0);
+
+    // const afterData = ctxMain.getImageData(
+    //   bbox.left, 
+    //   bbox.top, 
+    //   bboxWidth, 
+    //   bboxHeight
+    // );
+
+    if (bboxWidth !== 0 && bboxHeight !== 0) {
+      ctxDebug.clearRect(0, 0, debugCanvasElem.width, debugCanvasElem.height);
+
+      addHistoryStep(beforeData, bbox.left, bbox.top);
+      // history.push({
+      //   data: afterData,
+      //   x: bbox.left, 
+      //   y: bbox.top
+      // });
+
+      ctxDebug.putImageData(beforeData, 0, 0);
+
+      ctxDebug.beginPath();
+      ctxDebug.lineWidth = 1;
+      ctxDebug.strokeStyle = `#FF0000`;
+      ctxDebug.rect(
+        0, 
+        0, 
+        bboxWidth,
+        bboxHeight
+      );
+      ctxDebug.stroke();
+    }
+
+    ctxPre.clearRect(0, 0, preCanvasElem.width, preCanvasElem.height);
+  };
+
+  const addHistoryStep = (data: ImageData, x: number, y: number): void => {
+    if (history.length > (historyStep() + 1)) {
+      console.debug(`overwriting history`);
+      history.splice(historyStep() + 1);
+    }
+
+    setHistoryStep((old) => old + 1);
+
+    history.push({ data, x, y });
+  };
+
   onMount(() => {
     widthElem.value = canvasElem.width.toString();
     heightElem.value = canvasElem.height.toString();
 
-    canvasElem.addEventListener(`pointerdown`, (ev) => {
-      setDrawing(true);
-      updateCursor(ev);
+    subscribeEvent(`generic.undo`, null, () => {
+      // if ((historyStep() - 1) < 0) return;
+  
+      setHistoryStep((old) => old - 1);
+  
+      const newData = history[historyStep()];
+
+      const ctx = canvasElem.getContext(`2d`);
+
+      if (ctx != null) {
+        ctx.putImageData(newData.data, newData.x, newData.y);
+      }
     });
+  
+    subscribeEvent(`generic.redo`, null, () => {
+      // if ((historyStep() + 1) === history.length) return;
+  
+      setHistoryStep((old) => old + 1);
+  
+      const newData = history[historyStep()];
+
+      const ctx = canvasElem.getContext(`2d`);
+
+      if (ctx != null) {
+        ctx.putImageData(newData.data, newData.x, newData.y);
+      }
+    });
+
+    canvasElem.addEventListener(`pointerdown`, startDrawing);
 
     window.addEventListener(`pointermove`, (ev) => {
       updateCursor(ev);
     });
 
-    window.addEventListener(`pointerup`, () => {
-      setDrawing(false);
-    });
+    window.addEventListener(`pointerup`, finishDrawing);
 
     window.addEventListener(`pointerout`, (ev: PointerEvent) => {
-      if (ev.pointerType === `pen`) setDrawing(false);
+      if (ev.pointerType === `pen`) finishDrawing();
     });
 
     window.addEventListener(`pointerleave`, (ev: PointerEvent) => {
-      if (ev.pointerType === `pen`) setDrawing(false);
+      if (ev.pointerType === `pen`) finishDrawing();
     });
 
-    window.addEventListener(`pointercancel`, () => {
-      setDrawing(false);
-    });
+    window.addEventListener(`pointercancel`, finishDrawing);
   });
 
   return (
@@ -154,8 +300,6 @@ const ViewPort = (): JSXElement => {
       </div>
       <div 
         class={style.canvasWrapper}
-        onPointerEnter={() => setCursorVisible(true)}
-        onPointerLeave={() => setCursorVisible(false)}
         ref={canvasWrapperElem}
       >
         <div 
@@ -166,8 +310,22 @@ const ViewPort = (): JSXElement => {
         <canvas 
           width={600} 
           height={400} 
+          class={style.preCanvas}
+          ref={preCanvasElem}
+        />
+        <canvas 
+          width={600} 
+          height={400} 
           class={style.canvas}
+          onPointerEnter={() => setCursorVisible(true)}
+          onPointerLeave={() => setCursorVisible(false)}
           ref={canvasElem}
+        />
+        <canvas 
+          width={600} 
+          height={400} 
+          class={style.debugCanvas}
+          ref={debugCanvasElem}
         />
       </div>
     </div>
