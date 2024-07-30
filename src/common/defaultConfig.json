@@ -5,6 +5,8 @@
   "keymap": [
     { "enabled": true, "action": "Cut", "keyCombo": [ "Ctrl", "x" ] },
     { "enabled": true, "action": "Copy", "keyCombo": [ "Ctrl", "c" ] },
-    { "enabled": true, "action": "Paste", "keyCombo": [ "Ctrl", "v" ] }
+    { "enabled": true, "action": "Paste", "keyCombo": [ "Ctrl", "v" ] },
+    { "enabled": true, "action": "generic.undo", "keyCombo": [ "Ctrl", "z" ] },
+    { "enabled": true, "action": "generic.redo", "keyCombo": [ "Ctrl", "Shift", "z" ] }
   ]
 }
