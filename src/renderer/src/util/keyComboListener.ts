@@ -20,10 +20,10 @@ const emitKeyCombo = (newKeyCombo = currentKeyCombo): void => {
 
   //console.debug(`new keyCombo`, keycombo, listeners);
 
-  console.debug(`options open state: `, state.optionsOpen);
+  // console.debug(`options open state: `, state.optionsOpen);
 
   if (!state.optionsOpen) {
-    console.debug(config.keymap, newKeyCombo);
+    // console.debug(config.keymap, newKeyCombo);
     for (const kmItem of config.keymap) {
       if (!kmItem.enabled) continue;
       // bunch of checks to see if both arrays have the same
@@ -99,7 +99,7 @@ window.addEventListener(`click`, (ev: MouseEvent) => {
   if (ev.target == null) return;
   currentTarget = ev.target as Element;
 
-  console.debug(`new keycombo target:`, currentTarget);
+  // console.debug(`new keycombo target:`, currentTarget);
 });
 
 window.addEventListener(`contextmenu`, (ev: MouseEvent) => {

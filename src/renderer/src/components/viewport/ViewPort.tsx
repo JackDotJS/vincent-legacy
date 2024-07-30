@@ -4,7 +4,8 @@ import style from './ViewPort.module.css';
 import { subscribeEvent } from '@renderer/state/GlobalEventEmitter';
 
 interface HistoryItem {
-  data: ImageData,
+  beforeData: ImageData,
+  afterData: ImageData,
   x: number,
   y: number
 }
@@ -15,11 +16,14 @@ const ViewPort = (): JSXElement => {
   const [ drawing, setDrawing ] = createSignal(false);
   const [ brushColor, setBrushColor ] = createSignal(`#000000`);
   const [ eraserMode, setEraserMode ] = createSignal(false);
-  const [ historyStep, setHistoryStep ] = createSignal(0);
+  const [ historyStep, setHistoryStep ] = createSignal(-1);
+  const [ history, setHistory ] = createSignal<HistoryItem[]>([]);
 
   let lastPosX = 0;
   let lastPosY = 0;
   let lastSize = brushSize();
+
+  let repeaterMode = `reverse`;
 
   const bbox = {
     top: 0,
@@ -28,11 +32,8 @@ const ViewPort = (): JSXElement => {
     bottom: 0
   };
 
-  const history: HistoryItem[] = [];
-
   let canvasElem!: HTMLCanvasElement;
   let preCanvasElem!: HTMLCanvasElement;
-  let debugCanvasElem!: HTMLCanvasElement;
 
   let cursorElem!: HTMLDivElement;
   let canvasWrapperElem!: HTMLDivElement;
@@ -51,8 +52,6 @@ const ViewPort = (): JSXElement => {
     canvasElem.style.width = valAsNumber + `px`;
     preCanvasElem.width = valAsNumber;
     preCanvasElem.style.width = valAsNumber + `px`;
-    canvasElem.width = valAsNumber;
-    canvasElem.style.width = valAsNumber + `px`;
   };
 
   const setHeight = (value: string): void => {
@@ -61,8 +60,6 @@ const ViewPort = (): JSXElement => {
     canvasElem.style.height = valAsNumber + `px`;
     preCanvasElem.height = valAsNumber;
     preCanvasElem.style.height = valAsNumber + `px`;
-    canvasElem.height = valAsNumber;
-    canvasElem.style.height = valAsNumber + `px`;
   };
 
   const updateCursor = (ev: PointerEvent): void => {
@@ -155,9 +152,8 @@ const ViewPort = (): JSXElement => {
 
     const ctxMain = canvasElem.getContext(`2d`);
     const ctxPre = preCanvasElem.getContext(`2d`);
-    const ctxDebug = debugCanvasElem.getContext(`2d`);
 
-    if (ctxMain == null || ctxPre == null || ctxDebug == null) return;
+    if (ctxMain == null || ctxPre == null) return;
 
     // clamp bounding box to canvas bounds
     bbox.top = Math.min(canvasElem.height, Math.max(bbox.top, 0));
@@ -177,83 +173,122 @@ const ViewPort = (): JSXElement => {
 
     ctxMain.drawImage(preCanvasElem, 0, 0);
 
-    // const afterData = ctxMain.getImageData(
-    //   bbox.left, 
-    //   bbox.top, 
-    //   bboxWidth, 
-    //   bboxHeight
-    // );
+    const afterData = ctxMain.getImageData(
+      bbox.left, 
+      bbox.top, 
+      bboxWidth, 
+      bboxHeight
+    );
 
     if (bboxWidth !== 0 && bboxHeight !== 0) {
-      ctxDebug.clearRect(0, 0, debugCanvasElem.width, debugCanvasElem.height);
+      // ctxDebug.clearRect(0, 0, debugCanvasElem.width, debugCanvasElem.height);
 
-      addHistoryStep(beforeData, bbox.left, bbox.top);
+      addHistoryStep(beforeData, afterData, bbox.left, bbox.top);
       // history.push({
       //   data: afterData,
       //   x: bbox.left, 
       //   y: bbox.top
       // });
 
-      ctxDebug.putImageData(beforeData, 0, 0);
+      // ctxDebug.putImageData(beforeData, 0, 0);
 
-      ctxDebug.beginPath();
-      ctxDebug.lineWidth = 1;
-      ctxDebug.strokeStyle = `#FF0000`;
-      ctxDebug.rect(
-        0, 
-        0, 
-        bboxWidth,
-        bboxHeight
-      );
-      ctxDebug.stroke();
+      // ctxDebug.beginPath();
+      // ctxDebug.lineWidth = 1;
+      // ctxDebug.strokeStyle = `#FF0000`;
+      // ctxDebug.rect(
+      //   0, 
+      //   0, 
+      //   bboxWidth,
+      //   bboxHeight
+      // );
+      // ctxDebug.stroke();
     }
 
     ctxPre.clearRect(0, 0, preCanvasElem.width, preCanvasElem.height);
   };
 
-  const addHistoryStep = (data: ImageData, x: number, y: number): void => {
-    if (history.length > (historyStep() + 1)) {
-      console.debug(`overwriting history`);
-      history.splice(historyStep() + 1);
+  const addHistoryStep = (
+    beforeData: ImageData,
+    afterData: ImageData,
+    x: number,
+    y: number
+  ): void => {
+    if (historyStep() !== -1) {
+      // console.debug(history().length, historyStep());
+
+      if (history().length > (historyStep()) && repeaterMode === `reverse`) {
+        console.debug(`overwriting history`);
+        setHistory((old) => {
+          old.splice(historyStep());
+          return old;
+        });
+      } else {
+        setHistoryStep((old) => old + 1);
+      }
+    } else {
+      setHistoryStep((old) => old + 1);
     }
 
-    setHistoryStep((old) => old + 1);
+    repeaterMode = `forward`;
 
-    history.push({ data, x, y });
+    setHistory((old) => {
+      return [...old, { beforeData, afterData, x, y }];
+    });
   };
 
   onMount(() => {
+    setWidth(`600`);
+    setHeight(`400`);
     widthElem.value = canvasElem.width.toString();
     heightElem.value = canvasElem.height.toString();
 
     subscribeEvent(`generic.undo`, null, () => {
-      // if ((historyStep() - 1) < 0) return;
+      if ((historyStep() - 1) < 0  && repeaterMode === `reverse`) {
+        console.debug(`reached end of undo history`);
+        return;
+      }
+
+      if (repeaterMode === `reverse`) {
+        setHistoryStep((old) => old - 1);
+      }
+
+      repeaterMode = `reverse`;
   
-      setHistoryStep((old) => old - 1);
-  
-      const newData = history[historyStep()];
+      const newData = history()[historyStep()];
+
+      console.debug(historyStep(), newData);
 
       const ctx = canvasElem.getContext(`2d`);
 
       if (ctx != null) {
-        ctx.putImageData(newData.data, newData.x, newData.y);
+        ctx.putImageData(newData.beforeData, newData.x, newData.y);
       }
     });
   
     subscribeEvent(`generic.redo`, null, () => {
-      // if ((historyStep() + 1) === history.length) return;
+      if ((historyStep() + 1) === history().length && repeaterMode === `forward`) {
+        console.debug(`reached end of redo history`);
+        return;
+      }
+
+      if (repeaterMode === `forward`) {
+        setHistoryStep((old) => old + 1);
+      }
+
+      repeaterMode = `forward`;
   
-      setHistoryStep((old) => old + 1);
-  
-      const newData = history[historyStep()];
+      const newData = history()[historyStep()];
+
+      console.debug(historyStep(), newData);
 
       const ctx = canvasElem.getContext(`2d`);
 
       if (ctx != null) {
-        ctx.putImageData(newData.data, newData.x, newData.y);
+        ctx.putImageData(newData.afterData, newData.x, newData.y);
       }
     });
 
+    preCanvasElem.addEventListener(`pointerdown`, startDrawing);
     canvasElem.addEventListener(`pointerdown`, startDrawing);
 
     window.addEventListener(`pointermove`, (ev) => {
@@ -307,27 +342,51 @@ const ViewPort = (): JSXElement => {
           classList={{ [style.cursorVisible]: cursorVisible() }}
           ref={cursorElem}
         />
-        <canvas 
-          width={600} 
-          height={400} 
-          class={style.preCanvas}
-          ref={preCanvasElem}
-        />
-        <canvas 
-          width={600} 
-          height={400} 
+        <canvas
           class={style.canvas}
           onPointerEnter={() => setCursorVisible(true)}
           onPointerLeave={() => setCursorVisible(false)}
           ref={canvasElem}
         />
         <canvas 
-          width={600} 
-          height={400} 
-          class={style.debugCanvas}
-          ref={debugCanvasElem}
+          class={style.preCanvas}
+          ref={preCanvasElem}
         />
       </div>
+      {/* <div class={style.historyDebugger}>
+        <For each={history()}>
+          {(item) => {
+            const newCanvasElem1 = document.createElement(`canvas`);
+            const newCanvasElem2 = document.createElement(`canvas`);
+
+            newCanvasElem1.classList.add(`before`);
+            newCanvasElem2.classList.add(`after`);
+
+            newCanvasElem1.width = item.beforeData.width;
+            newCanvasElem1.height = item.beforeData.height;
+
+            newCanvasElem2.width = item.afterData.width;
+            newCanvasElem2.height = item.afterData.height;
+
+            const ctx1 = newCanvasElem1.getContext(`2d`);
+            const ctx2 = newCanvasElem2.getContext(`2d`);
+            if (ctx1 != null) {
+              ctx1.putImageData(item.beforeData, 0, 0);
+            }
+
+            if (ctx2 != null) {
+              ctx2.putImageData(item.afterData, 0, 0);
+            }
+
+            return (
+              <>
+                {newCanvasElem1}
+                {newCanvasElem2}
+              </>
+            );
+          }}
+        </For>
+      </div> */}
     </div>
   );
 };
