@@ -3,10 +3,10 @@
   "locale": "en_US",
   "debugMode": false,
   "keymap": [
-    { "enabled": true, "action": "Cut", "keyCombo": [ "Ctrl", "x" ] },
-    { "enabled": true, "action": "Copy", "keyCombo": [ "Ctrl", "c" ] },
-    { "enabled": true, "action": "Paste", "keyCombo": [ "Ctrl", "v" ] },
-    { "enabled": true, "action": "generic.undo", "keyCombo": [ "Ctrl", "z" ] },
-    { "enabled": true, "action": "generic.redo", "keyCombo": [ "Ctrl", "Shift", "z" ] }
+    { "enabled": true, "action": "Cut", "keyCombo": [ "Ctrl", "KeyX" ] },
+    { "enabled": true, "action": "Copy", "keyCombo": [ "Ctrl", "KeyC" ] },
+    { "enabled": true, "action": "Paste", "keyCombo": [ "Ctrl", "KeyV" ] },
+    { "enabled": true, "action": "generic.undo", "keyCombo": [ "Ctrl", "KeyZ" ] },
+    { "enabled": true, "action": "generic.redo", "keyCombo": [ "Ctrl", "Shift", "KeyZ" ] }
   ]
 }
