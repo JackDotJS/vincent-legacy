@@ -6,6 +6,7 @@ import style from './OptionsWrapper.module.css';
 
 import CategoryLanguage from './CategoryLanguage';
 import CategoryInput from './CategoryInput';
+import CategorySystem from './CategorySystem';
 import { deepEquals } from '../../../../common/deepEquals';
 import { trackDeep } from '@solid-primitives/deep';
 
@@ -99,6 +100,9 @@ const OptionsWrapper = (): JSXElement => {
               </Match>
               <Match when={selectedCategory() === `language`}>
                 <CategoryLanguage newConfig={newConfig} setNewConfig={setNewConfig} />
+              </Match>
+              <Match when={selectedCategory() === `system`}>
+                <CategorySystem newConfig={newConfig} setNewConfig={setNewConfig} />
               </Match>
             </Switch>
           </div>

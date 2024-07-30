@@ -25,7 +25,8 @@
       "search": "Search Languages"
     },
     "system": {
-      "title": "System"
+      "title": "System",
+      "resetOptions": "Reset All Options"
     },
     "debug": {
       "title": "Debug"
