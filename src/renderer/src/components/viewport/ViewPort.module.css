@@ -50,7 +50,7 @@
   border: 1px solid rgba(0,0,0,0.25);
 }
 
-.canvas, .preCanvas {
+.canvas, .hiddenCanvas {
   user-select: none;
 }
 
@@ -62,12 +62,9 @@
   background-size: 16px 16px;
 }
 
-.preCanvas {
-  touch-action: none;
+.hiddenCanvas {
+  display: none;
+  /* touch-action: none;
   pointer-events: none;
-  position: absolute;
-}
-
-.historyDebugger > canvas {
-  border: 1px solid orange;
+  position: absolute; */
 }

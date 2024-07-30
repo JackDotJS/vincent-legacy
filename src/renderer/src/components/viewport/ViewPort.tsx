@@ -33,7 +33,7 @@ const ViewPort = (): JSXElement => {
   };
 
   let canvasElem!: HTMLCanvasElement;
-  let preCanvasElem!: HTMLCanvasElement;
+  let hiddenCanvasElem!: HTMLCanvasElement;
 
   let cursorElem!: HTMLDivElement;
   let canvasWrapperElem!: HTMLDivElement;
@@ -50,16 +50,16 @@ const ViewPort = (): JSXElement => {
     const valAsNumber = validateNumber(value);
     canvasElem.width = valAsNumber;
     canvasElem.style.width = valAsNumber + `px`;
-    preCanvasElem.width = valAsNumber;
-    preCanvasElem.style.width = valAsNumber + `px`;
+    hiddenCanvasElem.width = valAsNumber;
+    hiddenCanvasElem.style.width = valAsNumber + `px`;
   };
 
   const setHeight = (value: string): void => {
     const valAsNumber = validateNumber(value);
     canvasElem.height = valAsNumber;
     canvasElem.style.height = valAsNumber + `px`;
-    preCanvasElem.height = valAsNumber;
-    preCanvasElem.style.height = valAsNumber + `px`;
+    hiddenCanvasElem.height = valAsNumber;
+    hiddenCanvasElem.style.height = valAsNumber + `px`;
   };
 
   const updateCursor = (ev: PointerEvent): void => {
@@ -95,7 +95,7 @@ const ViewPort = (): JSXElement => {
       if (maxRight > bbox.right) bbox.right = maxRight;
       if (maxBottom > bbox.bottom) bbox.bottom = maxBottom;
 
-      const ctx = preCanvasElem.getContext(`2d`);
+      const ctx = canvasElem.getContext(`2d`);
 
       if (ctx != null) {
         if (eraserMode()) {
@@ -151,9 +151,9 @@ const ViewPort = (): JSXElement => {
     setDrawing(false);
 
     const ctxMain = canvasElem.getContext(`2d`);
-    const ctxPre = preCanvasElem.getContext(`2d`);
+    const ctxHidden = hiddenCanvasElem.getContext(`2d`);
 
-    if (ctxMain == null || ctxPre == null) return;
+    if (ctxMain == null || ctxHidden == null) return;
 
     // clamp bounding box to canvas bounds
     bbox.top = Math.min(canvasElem.height, Math.max(bbox.top, 0));
@@ -164,16 +164,23 @@ const ViewPort = (): JSXElement => {
     const bboxWidth = Math.abs(bbox.right - bbox.left);
     const bboxHeight = Math.abs(bbox.bottom - bbox.top);
 
-    const beforeData = ctxMain.getImageData(
+    const beforeData = ctxHidden.getImageData(
       bbox.left, 
       bbox.top, 
       bboxWidth, 
       bboxHeight
     );
 
-    ctxMain.drawImage(preCanvasElem, 0, 0);
+    ctxHidden.putImageData(
+      ctxMain.getImageData(
+        bbox.left,
+        bbox.top,
+        bboxWidth,
+        bboxHeight
+      ), bbox.left, bbox.top
+    );
 
-    const afterData = ctxMain.getImageData(
+    const afterData = ctxHidden.getImageData(
       bbox.left, 
       bbox.top, 
       bboxWidth, 
@@ -204,7 +211,7 @@ const ViewPort = (): JSXElement => {
       // ctxDebug.stroke();
     }
 
-    ctxPre.clearRect(0, 0, preCanvasElem.width, preCanvasElem.height);
+    // ctxHidden.clearRect(0, 0, hiddenCanvasElem.width, hiddenCanvasElem.height);
   };
 
   const addHistoryStep = (
@@ -258,11 +265,12 @@ const ViewPort = (): JSXElement => {
 
       console.debug(historyStep(), newData);
 
-      const ctx = canvasElem.getContext(`2d`);
+      const ctxMain = canvasElem.getContext(`2d`);
+      const ctxHidden = hiddenCanvasElem.getContext(`2d`);
 
-      if (ctx != null) {
-        ctx.putImageData(newData.beforeData, newData.x, newData.y);
-      }
+      if (ctxMain == null || ctxHidden == null) return;
+      ctxMain.putImageData(newData.beforeData, newData.x, newData.y);
+      ctxHidden.putImageData(newData.beforeData, newData.x, newData.y);
     });
   
     subscribeEvent(`generic.redo`, null, () => {
@@ -281,14 +289,14 @@ const ViewPort = (): JSXElement => {
 
       console.debug(historyStep(), newData);
 
-      const ctx = canvasElem.getContext(`2d`);
+      const ctxMain = canvasElem.getContext(`2d`);
+      const ctxHidden = hiddenCanvasElem.getContext(`2d`);
 
-      if (ctx != null) {
-        ctx.putImageData(newData.afterData, newData.x, newData.y);
-      }
+      if (ctxMain == null || ctxHidden == null) return;
+      ctxMain.putImageData(newData.afterData, newData.x, newData.y);
+      ctxHidden.putImageData(newData.afterData, newData.x, newData.y);
     });
 
-    preCanvasElem.addEventListener(`pointerdown`, startDrawing);
     canvasElem.addEventListener(`pointerdown`, startDrawing);
 
     window.addEventListener(`pointermove`, (ev) => {
@@ -349,8 +357,8 @@ const ViewPort = (): JSXElement => {
           ref={canvasElem}
         />
         <canvas 
-          class={style.preCanvas}
-          ref={preCanvasElem}
+          class={style.hiddenCanvas}
+          ref={hiddenCanvasElem}
         />
       </div>
       {/* <div class={style.historyDebugger}>
