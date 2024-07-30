@@ -36,5 +36,10 @@
     },
     "save": "Save Changes",
     "discard": "Discard Changes"
+  },
+  "menubar": {
+    "help": {
+      "github": "GitHub"
+    }
   }
 }
