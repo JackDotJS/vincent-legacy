@@ -83,6 +83,8 @@ let historyStep: number = -1;
 let repeaterMode = `reverse`;
 
 export const addHistoryStep = (data: HistoryItem): void => {
+  // FIXME: overwrite logic can get fucked up a bit if 
+  // the user has performed a redo beforehand.
   if (
     historyStep > -1 
     && history.length > historyStep 

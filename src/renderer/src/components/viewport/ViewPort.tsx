@@ -75,7 +75,6 @@ const ViewPort = (): JSXElement => {
 
     if (drawing()) {
       // update bounding box data
-
       const brushMargin = ((curSize / 2) + 1);
       const maxTop = (curPosY - brushMargin);
       const maxLeft = (curPosX - brushMargin);
@@ -180,8 +179,6 @@ const ViewPort = (): JSXElement => {
     );
 
     if (bboxWidth !== 0 && bboxHeight !== 0) {
-      // ctxDebug.clearRect(0, 0, debugCanvasElem.width, debugCanvasElem.height);
-
       addHistoryStep({
         type: `canvas`,
         data: {
@@ -191,27 +188,7 @@ const ViewPort = (): JSXElement => {
         x: bbox.left,
         y: bbox.top
       });
-      // history.push({
-      //   data: afterData,
-      //   x: bbox.left, 
-      //   y: bbox.top
-      // });
-
-      // ctxDebug.putImageData(beforeData, 0, 0);
-
-      // ctxDebug.beginPath();
-      // ctxDebug.lineWidth = 1;
-      // ctxDebug.strokeStyle = `#FF0000`;
-      // ctxDebug.rect(
-      //   0, 
-      //   0, 
-      //   bboxWidth,
-      //   bboxHeight
-      // );
-      // ctxDebug.stroke();
     }
-
-    // ctxHidden.clearRect(0, 0, hiddenCanvasElem.width, hiddenCanvasElem.height);
   };
 
   onMount(() => {
