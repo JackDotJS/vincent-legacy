@@ -1,29 +1,21 @@
-import { createSignal, JSXElement, onMount } from 'solid-js';
+import { createSignal, JSXElement, onMount, useContext } from 'solid-js';
+import { addHistoryStep } from '../../state/HistoryController';
+import { StateContext } from '../../state/StateController';
 
 import style from './ViewPort.module.css';
-import { subscribeEvent } from '@renderer/state/GlobalEventEmitter';
-
-interface HistoryItem {
-  beforeData: ImageData,
-  afterData: ImageData,
-  x: number,
-  y: number
-}
 
 const ViewPort = (): JSXElement => {
+  const { setState } = useContext(StateContext);
+
   const [ brushSize, setBrushSize ] = createSignal(10);
   const [ cursorVisible, setCursorVisible ] = createSignal(false);
   const [ drawing, setDrawing ] = createSignal(false);
   const [ brushColor, setBrushColor ] = createSignal(`#000000`);
   const [ eraserMode, setEraserMode ] = createSignal(false);
-  const [ historyStep, setHistoryStep ] = createSignal(-1);
-  const [ history, setHistory ] = createSignal<HistoryItem[]>([]);
 
   let lastPosX = 0;
   let lastPosY = 0;
   let lastSize = brushSize();
-
-  let repeaterMode = `reverse`;
 
   const bbox = {
     top: 0,
@@ -190,7 +182,15 @@ const ViewPort = (): JSXElement => {
     if (bboxWidth !== 0 && bboxHeight !== 0) {
       // ctxDebug.clearRect(0, 0, debugCanvasElem.width, debugCanvasElem.height);
 
-      addHistoryStep(beforeData, afterData, bbox.left, bbox.top);
+      addHistoryStep({
+        type: `canvas`,
+        data: {
+          before: beforeData, 
+          after: afterData
+        },
+        x: bbox.left,
+        y: bbox.top
+      });
       // history.push({
       //   data: afterData,
       //   x: bbox.left, 
@@ -214,90 +214,14 @@ const ViewPort = (): JSXElement => {
     // ctxHidden.clearRect(0, 0, hiddenCanvasElem.width, hiddenCanvasElem.height);
   };
 
-  const addHistoryStep = (
-    beforeData: ImageData,
-    afterData: ImageData,
-    x: number,
-    y: number
-  ): void => {
-    if (historyStep() !== -1) {
-      // console.debug(history().length, historyStep());
-
-      if (history().length > (historyStep()) && repeaterMode === `reverse`) {
-        console.debug(`overwriting history`);
-        setHistory((old) => {
-          old.splice(historyStep());
-          return old;
-        });
-      } else {
-        setHistoryStep((old) => old + 1);
-      }
-    } else {
-      setHistoryStep((old) => old + 1);
-    }
-
-    repeaterMode = `forward`;
-
-    setHistory((old) => {
-      return [...old, { beforeData, afterData, x, y }];
-    });
-  };
-
   onMount(() => {
     setWidth(`600`);
     setHeight(`400`);
     widthElem.value = canvasElem.width.toString();
     heightElem.value = canvasElem.height.toString();
 
-    subscribeEvent(`generic.undo`, null, () => {
-      if ((historyStep() - 1) < 0  && repeaterMode === `reverse`) {
-        console.debug(`reached end of undo history`);
-        return;
-      }
-
-      if (repeaterMode === `reverse`) {
-        setHistoryStep((old) => old - 1);
-      }
-
-      repeaterMode = `reverse`;
-  
-      const newData = history()[historyStep()];
-
-      console.debug(historyStep(), newData);
-
-      const ctxMain = canvasElem.getContext(`2d`);
-      const ctxHidden = hiddenCanvasElem.getContext(`2d`);
-
-      if (ctxMain == null || ctxHidden == null) return;
-      ctxMain.putImageData(newData.beforeData, newData.x, newData.y);
-      ctxHidden.putImageData(newData.beforeData, newData.x, newData.y);
-    });
-  
-    subscribeEvent(`generic.redo`, null, () => {
-      if ((historyStep() + 1) === history().length && repeaterMode === `forward`) {
-        console.debug(`reached end of redo history`);
-        return;
-      }
-
-      if (repeaterMode === `forward`) {
-        setHistoryStep((old) => old + 1);
-      }
-
-      repeaterMode = `forward`;
-  
-      const newData = history()[historyStep()];
-
-      console.debug(historyStep(), newData);
-
-      const ctxMain = canvasElem.getContext(`2d`);
-      const ctxHidden = hiddenCanvasElem.getContext(`2d`);
-
-      if (ctxMain == null || ctxHidden == null) return;
-      ctxMain.putImageData(newData.afterData, newData.x, newData.y);
-      ctxHidden.putImageData(newData.afterData, newData.x, newData.y);
-    });
-
-    canvasElem.addEventListener(`pointerdown`, startDrawing);
+    setState(`canvas`, canvasElem);
+    setState(`hiddenCanvas`, hiddenCanvasElem);
 
     window.addEventListener(`pointermove`, (ev) => {
       updateCursor(ev);
@@ -352,6 +276,7 @@ const ViewPort = (): JSXElement => {
         />
         <canvas
           class={style.canvas}
+          onPointerDown={(ev) => startDrawing(ev)}
           onPointerEnter={() => setCursorVisible(true)}
           onPointerLeave={() => setCursorVisible(false)}
           ref={canvasElem}

@@ -8,8 +8,16 @@ import { trackDeep } from "@solid-primitives/deep";
 const [ ready, setReady ] = createSignal(false);
 export const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(defaultConfig));
 
-export const [ state, setState ] = createStore({
+interface VincentState {
+  optionsOpen: boolean,
+  canvas: HTMLCanvasElement | null,
+  hiddenCanvas: HTMLCanvasElement | null,
+}
+
+export const [ state, setState ] = createStore<VincentState>({
   optionsOpen: false,
+  canvas: null,
+  hiddenCanvas: null,
 });
 
 const updateDictionary = async (langCode: string): Promise<i18n.BaseRecordDict> => {
@@ -48,6 +56,7 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
     }, readConfig);
 
     import(`./StateEventListeners`);
+    import(`./HistoryController`);
 
     setReady(true);
   });
