@@ -1,7 +1,7 @@
 import { ErrorBoundary } from 'solid-js';
 import { render } from 'solid-js/web';
 import App from './App';
-import ErrorScreen from './components/ErrorCatcher';
+import ErrorScreen from './ui/ErrorCatcher';
 import './global.css';
 
 render(() => {

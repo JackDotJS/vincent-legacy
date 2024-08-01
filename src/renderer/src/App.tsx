@@ -1,11 +1,11 @@
 import { JSXElement } from 'solid-js';
 import { StateController } from './state/StateController';
 import './util/keyComboListener';
-import OptionsWrapper from './components/options/OptionsWrapper';
-import MenuBar from './components/MenuBar';
-import ViewPort from './components/viewport/ViewPort';
-import HistoryDebugger from './components/debug/HistoryDebugger';
-import ModalBase from './components/modal/ModalBase';
+import OptionsWrapper from './ui/options/OptionsWrapper';
+import MenuBar from './ui/MenuBar';
+import ViewPort from './ui/viewport/ViewPort';
+import HistoryDebugger from './ui/debug/HistoryDebugger';
+import ModalBase from './ui/modal/ModalBase';
 
 const App = (): JSXElement => {
   return (

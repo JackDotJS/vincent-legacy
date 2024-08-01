@@ -1,6 +1,6 @@
 import { subscribeEvent } from "../state/GlobalEventEmitter";
 import { setState } from "./StateController";
-import NewFileModal from "../components/modal/ModalNewFile";
+import NewFileModal from "../ui/modal/ModalNewFile";
 
 subscribeEvent(`file.new`, null, () => {
   setState(`modalContents`, NewFileModal);
