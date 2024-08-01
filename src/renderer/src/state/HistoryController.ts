@@ -66,23 +66,27 @@ class HistoryController {
   }
 
   addHistoryStep(data: HistoryItem): void {
-    // FIXME: overwrite logic can get fucked up a bit if 
-    // the user has performed a redo beforehand.
-    if (
-      this.getStep() > -1 
-      && (this.getHistory().length > (this.getStep() + 1) || this.getRepeaterMode() === `reverse`)
-    ) {
-      console.debug(`overwriting history`);
+    const initialized = this.getStep() > -1;
+    const hasStepsAhead = this.getHistory().length > (this.getStep() + 1);
+    const latestChangeReversed = this.getRepeaterMode() === `reverse`;
+
+    // checks if there's steps ahead that need to be overwritten
+    if (initialized && (hasStepsAhead || latestChangeReversed)) {
+      // keep current step if we're in forward mode
+      const offset = (this.getRepeaterMode() === `forward`) ? 1 : 0;
+
       this.setHistory((old) => {
-        old.splice(this.getStep());
-        return old;
+        old.splice(this.getStep() + offset);
+        return [...old, data];
       });
+
+      this.setStep(old => old + offset);
     } else {
+      this.setHistory((old) => [...old, data]);
       this.setStep(old => old + 1);
     }
   
     this.setRepeaterMode(`forward`);
-    this.setHistory((old) => [...old, data]);
   }
 
   updateData(
