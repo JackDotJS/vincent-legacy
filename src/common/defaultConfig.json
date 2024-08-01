@@ -1,7 +1,10 @@
 {
   "__version": 0,
   "locale": "en_US",
-  "debugMode": false,
+  "debug": {
+    "enabled": true,
+    "historyVisualizer": false
+  },
   "keymap": [
     { "enabled": true, "action": "Cut", "keyCombo": [ "Ctrl", "KeyX" ] },
     { "enabled": true, "action": "Copy", "keyCombo": [ "Ctrl", "KeyC" ] },

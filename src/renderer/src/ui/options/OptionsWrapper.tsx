@@ -1,4 +1,4 @@
-import { JSXElement, Match, Switch, createEffect, createSignal, useContext } from 'solid-js';
+import { JSXElement, Match, Show, Switch, createEffect, createSignal, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 import { createStore, reconcile, unwrap } from 'solid-js/store';
@@ -7,6 +7,7 @@ import style from './OptionsWrapper.module.css';
 import CategoryLanguage from './CategoryLanguage';
 import CategoryInput from './CategoryInput';
 import CategorySystem from './CategorySystem';
+import CategoryDebug from './CategoryDebug';
 import { deepEquals } from '../../../../common/deepEquals';
 import { trackDeep } from '@solid-primitives/deep';
 
@@ -69,9 +70,11 @@ const OptionsWrapper = (): JSXElement => {
               <button onClick={() => setSelectedCategory(`system`)}>
                 {t(`options.system.title`)}
               </button>
-              <button onClick={() => setSelectedCategory(`debug`)}>
-                {t(`options.debug.title`)}
-              </button>
+              <Show when={config.debug.enabled}>
+                <button onClick={() => setSelectedCategory(`debug`)}>
+                  {t(`options.debug.title`)}
+                </button>
+              </Show>
               <button onClick={() => setSelectedCategory(`experimental`)}>
                 {t(`options.experimental.title`)}
               </button>
@@ -103,6 +106,9 @@ const OptionsWrapper = (): JSXElement => {
               </Match>
               <Match when={selectedCategory() === `system`}>
                 <CategorySystem newConfig={newConfig} setNewConfig={setNewConfig} />
+              </Match>
+              <Match when={selectedCategory() === `debug`}>
+                <CategoryDebug newConfig={newConfig} setNewConfig={setNewConfig} />
               </Match>
             </Switch>
           </div>
