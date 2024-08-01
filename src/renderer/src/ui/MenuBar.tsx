@@ -37,8 +37,8 @@ const MenuBar = (): JSXElement => {
         <MenuButton label="Exit" actionId="app.exit"/>
       </DropDownMenu>
       <DropDownMenu label="Edit">
-        <MenuButton label="Undo" actionId="generic.undo" />
-        <MenuButton label="Redo" actionId="generic.redo" />
+        <MenuButton label="Undo" actionId="history.undo" />
+        <MenuButton label="Redo" actionId="history.redo" />
         <MenuButton label={t(`options.title`)} actionId="menu.options.open"/>
       </DropDownMenu>
       <DropDownMenu label="View">
@@ -54,7 +54,7 @@ const MenuBar = (): JSXElement => {
         {/** todo */}
       </DropDownMenu>
       <DropDownMenu label="Help">
-        <MenuButton label={t(`menubar.help.github`)} actionId="openurl.github"/>
+        <MenuButton label={t(`menubar.help.github`)} actionId="www.github"/>
       </DropDownMenu>
     </DropDownCollection>
   );

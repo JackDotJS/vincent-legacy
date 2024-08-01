@@ -27,7 +27,7 @@ class HistoryController {
 
 
     // eslint-disable-next-line solid/reactivity 
-    subscribeEvent(`generic.undo`, null, () => {
+    subscribeEvent(`history.undo`, null, () => {
       if ((this.getStep() - 1) < 0 && this.getRepeaterMode() === `reverse`) {
         console.debug(`reached end of undo history`);
         return;
@@ -46,7 +46,7 @@ class HistoryController {
     });
     
     // eslint-disable-next-line solid/reactivity 
-    subscribeEvent(`generic.redo`, null, () => {
+    subscribeEvent(`history.redo`, null, () => {
       if ((this.getStep() + 1) === history().length && this.getRepeaterMode() === `forward`) {
         console.debug(`reached end of redo history`);
         return;

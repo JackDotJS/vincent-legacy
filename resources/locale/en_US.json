@@ -61,5 +61,34 @@
     "summary": "Looks like something real bad happened. Sorry about that...",
     "technical": "Tech-savvy folks might be able to do something useful with this error message:",
     "conclusion": "If this keeps happening, please report it on Vincent's GitHub issue tracker. Otherwise, you can try reloading the app."
+  },
+  "actions": {
+    "generic": {
+      "cut": "Cut",
+      "copy": "Copy",
+      "paste": "Paste"
+    },
+    "history": {
+      "undo": "Undo",
+      "redo": "Redo"
+    },
+    "file": {
+      "new": "New File"
+    },
+    "menu": {
+      "options": {
+        "open": "Open Menu: Options"
+      }
+    },
+    "app": {
+      "exit": "Quit"
+    },
+    "www": {
+      "github": "View Vincent on GitHub"
+    },
+    "debug": {
+      "throw": "DEBUG: throw error",
+      "randomColor": "DEBUG: random color test"
+    }
   }
 }

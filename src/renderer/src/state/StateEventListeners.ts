@@ -16,6 +16,6 @@ subscribeEvent(`app.exit`, null, () => {
   window.close();
 });
 
-subscribeEvent(`openurl.github`, null, () => {
+subscribeEvent(`www.github`, null, () => {
   window.open(`https://github.com/JackDotJS/vincent`);
 });

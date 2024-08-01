@@ -6,11 +6,11 @@
     "historyVisualizer": false
   },
   "keymap": [
-    { "enabled": true, "action": "Cut", "keyCombo": [ "Ctrl", "KeyX" ] },
-    { "enabled": true, "action": "Copy", "keyCombo": [ "Ctrl", "KeyC" ] },
-    { "enabled": true, "action": "Paste", "keyCombo": [ "Ctrl", "KeyV" ] },
-    { "enabled": true, "action": "generic.undo", "keyCombo": [ "Ctrl", "KeyZ" ] },
-    { "enabled": true, "action": "generic.redo", "keyCombo": [ "Ctrl", "Shift", "KeyZ" ] },
+    { "enabled": true, "action": "generic.cut", "keyCombo": [ "Ctrl", "KeyX" ] },
+    { "enabled": true, "action": "generic.copy", "keyCombo": [ "Ctrl", "KeyC" ] },
+    { "enabled": true, "action": "generic.paste", "keyCombo": [ "Ctrl", "KeyV" ] },
+    { "enabled": true, "action": "history.undo", "keyCombo": [ "Ctrl", "KeyZ" ] },
+    { "enabled": true, "action": "history.redo", "keyCombo": [ "Ctrl", "Shift", "KeyZ" ] },
     { "enabled": true, "action": "app.exit", "keyCombo": [ "Ctrl", "KeyQ" ] },
     { "enabled": true, "action": "file.new", "keyCombo": [ "Ctrl", "KeyN" ] }
   ]
