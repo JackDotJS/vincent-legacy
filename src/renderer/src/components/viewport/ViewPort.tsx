@@ -1,11 +1,10 @@
 import { createSignal, JSXElement, onMount, useContext } from 'solid-js';
-import { addHistoryStep } from '../../state/HistoryController';
 import { StateContext } from '../../state/StateController';
 
 import style from './ViewPort.module.css';
 
 const ViewPort = (): JSXElement => {
-  const { setState } = useContext(StateContext);
+  const { state, setState } = useContext(StateContext);
 
   const [ brushSize, setBrushSize ] = createSignal(10);
   const [ cursorVisible, setCursorVisible ] = createSignal(false);
@@ -179,7 +178,7 @@ const ViewPort = (): JSXElement => {
     );
 
     if (bboxWidth !== 0 && bboxHeight !== 0) {
-      addHistoryStep({
+      state.history.addHistoryStep({
         type: `canvas`,
         data: {
           before: beforeData, 
@@ -263,40 +262,6 @@ const ViewPort = (): JSXElement => {
           ref={hiddenCanvasElem}
         />
       </div>
-      {/* <div class={style.historyDebugger}>
-        <For each={history()}>
-          {(item) => {
-            const newCanvasElem1 = document.createElement(`canvas`);
-            const newCanvasElem2 = document.createElement(`canvas`);
-
-            newCanvasElem1.classList.add(`before`);
-            newCanvasElem2.classList.add(`after`);
-
-            newCanvasElem1.width = item.beforeData.width;
-            newCanvasElem1.height = item.beforeData.height;
-
-            newCanvasElem2.width = item.afterData.width;
-            newCanvasElem2.height = item.afterData.height;
-
-            const ctx1 = newCanvasElem1.getContext(`2d`);
-            const ctx2 = newCanvasElem2.getContext(`2d`);
-            if (ctx1 != null) {
-              ctx1.putImageData(item.beforeData, 0, 0);
-            }
-
-            if (ctx2 != null) {
-              ctx2.putImageData(item.afterData, 0, 0);
-            }
-
-            return (
-              <>
-                {newCanvasElem1}
-                {newCanvasElem2}
-              </>
-            );
-          }}
-        </For>
-      </div> */}
     </div>
   );
 };

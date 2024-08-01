@@ -4,20 +4,23 @@ import defaultConfig from '../../../common/defaultConfig.json';
 import * as i18n from "@solid-primitives/i18n";
 import { deepEquals } from "../../../common/deepEquals";
 import { trackDeep } from "@solid-primitives/deep";
-
-const [ ready, setReady ] = createSignal(false);
-export const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(defaultConfig));
+import HistoryController from "./HistoryController";
 
 interface VincentState {
   optionsOpen: boolean,
   canvas: HTMLCanvasElement | null,
   hiddenCanvas: HTMLCanvasElement | null,
+  history: typeof HistoryController
 }
+
+const [ ready, setReady ] = createSignal(false);
+export const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(defaultConfig));
 
 export const [ state, setState ] = createStore<VincentState>({
   optionsOpen: false,
   canvas: null,
   hiddenCanvas: null,
+  history: HistoryController
 });
 
 const updateDictionary = async (langCode: string): Promise<i18n.BaseRecordDict> => {

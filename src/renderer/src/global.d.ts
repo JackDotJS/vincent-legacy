@@ -1,5 +1,73 @@
 import defaultConfig from '../../common/defaultConfig.json';
 
+interface BaseHistoryItem {
+  type: `canvas` | `text` | `number` | `select` | `checkbox` | `radio` | `slider`,
+}
+
+interface CanvasChange extends BaseHistoryItem {
+  type: `canvas`,
+  data: {
+    before: ImageData,
+    after: ImageData
+  },
+  x: number,
+  y: number
+}
+
+interface TextChange extends BaseHistoryItem {
+  type: `text`
+  data: {
+    before: string,
+    after: string,
+  },
+  target: HTMLInputElement
+}
+
+interface NumberChange extends BaseHistoryItem {
+  type: `number`,
+  data: {
+    before: number,
+    after: number
+  },
+  target: HTMLInputElement
+}
+
+interface SelectChange extends BaseHistoryItem {
+  type: `select`,
+  data: {
+    before: string,
+    after: string
+  },
+  target: HTMLSelectElement
+}
+
+interface CheckBoxChange extends BaseHistoryItem {
+  type: `checkbox`,
+  data: {
+    before: boolean,
+    after: boolean
+  },
+  target: HTMLInputElement
+}
+
+interface RadioChange extends BaseHistoryItem {
+  type: `radio`,
+  data: {
+    before: boolean,
+    after: boolean
+  },
+  target: HTMLInputElement
+}
+
+interface SliderChange extends BaseHistoryItem {
+  type: `slider`,
+  data: {
+    before: number,
+    after: number
+  },
+  target: HTMLInputElement
+}
+
 export interface IElectronAPI {
   pingTest: () => Promise<void>,
   readConfig: () => Promise<typeof defaultConfig>,
@@ -35,4 +103,13 @@ declare global {
   type Translator = (path: string) => string;
 
   type VincentConfig = typeof defaultConfig;
+
+  export type HistoryItem = 
+  CanvasChange 
+  | TextChange 
+  | NumberChange 
+  | SelectChange 
+  | CheckBoxChange 
+  | RadioChange 
+  | SliderChange;
 }
