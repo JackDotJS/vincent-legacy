@@ -14,7 +14,7 @@ const MenuBar = (): JSXElement => {
   return (
     <DropDownCollection>
       <DropDownMenu label="File">
-        <MenuButton label="New..." />
+        <MenuButton label="New..." actionId="file.new" />
         <MenuButton label="Open..." />
         <SubMenu label="Open Recent">
           <MenuButton label="example1.vnct" />
