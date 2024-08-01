@@ -1,7 +1,7 @@
 import { For, JSXElement, createEffect, createSignal, useContext } from 'solid-js';
 import { SetStoreFunction, unwrap } from 'solid-js/store';
 import { StateContext } from '../../state/StateController';
-import { disableDefaults, enableDefaults, offKeyCombo, onKeyCombo } from '../../util/keyComboListener';
+import InputHandler from '../../state/InputHandler';
 
 import * as i18n from '@solid-primitives/i18n';
 import style from './CategoryInput.module.css';
@@ -43,7 +43,7 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
     if (ev.target == null) return;
     const button = ev.target as HTMLButtonElement;
     setListening(true);
-    disableDefaults();
+    InputHandler.setDefaultsPrevented(true);
 
     const oldText = button.innerText;
     button.innerText = `...`;
@@ -52,10 +52,10 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
 
     const cancelFunction = (): void => {
       setListening(false);
-      enableDefaults();
+      InputHandler.setDefaultsPrevented(false);
       button.innerText = oldText;
       button.classList.remove(style.rebinding);
-      offKeyCombo(keyComboListener);
+      InputHandler.offInputChange(keyComboListener);
       console.debug(`rebind cancelled`);
     };
 
@@ -65,9 +65,10 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
     });
     window.addEventListener(`blur`, cancelFunction);
 
-    keyComboListener = onKeyCombo((keyCombo) => {
+    // eslint-disable-next-line solid/reactivity
+    keyComboListener = InputHandler.onInputChange((keyCombo) => {
       setListening(false);
-      enableDefaults();
+      InputHandler.setDefaultsPrevented(false);
 
       props.setNewConfig(`keymap`, index, {
         enabled: props.newConfig.keymap[index].enabled,
@@ -78,7 +79,7 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
       button.innerText = translateInputCodes(keyCombo).join(` + `).toUpperCase();
       button.classList.remove(style.rebinding);
 
-      offKeyCombo(keyComboListener);
+      InputHandler.offInputChange(keyComboListener);
       window.removeEventListener(`keydown`, cancelFunction);
       window.removeEventListener(`blur`, cancelFunction);
 
@@ -90,7 +91,7 @@ const CategoryInput = (props: { newConfig: VincentConfig, setNewConfig: SetStore
 
   const removeKeybind = (index: number): void => {
     const oldKeymap = structuredClone(unwrap(props.newConfig.keymap));
-    const filtered = oldKeymap.filter((_item, filterIndex) => index !== filterIndex)
+    const filtered = oldKeymap.filter((_item, filterIndex) => index !== filterIndex);
     props.setNewConfig(`keymap`, filtered);
   };
 

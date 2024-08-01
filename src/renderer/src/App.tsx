@@ -1,11 +1,11 @@
 import { JSXElement, Show, useContext } from 'solid-js';
 import { StateContext, StateController } from './state/StateController';
-import './util/keyComboListener';
 import OptionsWrapper from './ui/options/OptionsWrapper';
 import MenuBar from './ui/MenuBar';
 import ViewPort from './ui/viewport/ViewPort';
 import HistoryDebugger from './ui/debug/HistoryDebugger';
 import ModalBase from './ui/modal/ModalBase';
+import { Portal } from 'solid-js/web';
 
 const App = (): JSXElement => {
   const { config } = useContext(StateContext);
@@ -17,8 +17,10 @@ const App = (): JSXElement => {
       <Show when={config.debug.enabled && config.debug.historyVisualizer}>
         <HistoryDebugger/>
       </Show>
-      <OptionsWrapper/>
-      <ModalBase/>
+      <Portal>
+        <OptionsWrapper/>
+        <ModalBase/>
+      </Portal>
     </StateController>
   );
 };
