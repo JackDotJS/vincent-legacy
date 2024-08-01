@@ -7,48 +7,64 @@ const HistoryDebugger = (): JSXElement => {
 
   return (
     <div class={style.debugWrapper}>
-      <For each={state.history.getHistory()}>
-        {(item: HistoryItem) => {
-          if (item.type === `canvas`) {
-            const newCanvasElem1 = document.createElement(`canvas`);
-            const newCanvasElem2 = document.createElement(`canvas`);
+      <div class={style.debugInfo}>
+        <span>history length: {state.history.getHistory().length}</span>
+        <span>current step index: {state.history.getStep()}</span>
+        <span>repeater mode: {state.history.getRepeaterMode()}</span>
+      </div>
+      <div class={style.historyItemList}>
+        <For each={state.history.getHistory()}>
+          {(item: HistoryItem, index) => {
+            const isCurrentStep = (): boolean => index() === state.history.getStep();
 
-            newCanvasElem1.classList.add(`before`);
-            newCanvasElem2.classList.add(`after`);
+            if (item.type === `canvas`) {
+              const newCanvasElem1 = document.createElement(`canvas`);
+              const newCanvasElem2 = document.createElement(`canvas`);
 
-            newCanvasElem1.width = item.data.before.width;
-            newCanvasElem1.height = item.data.before.height;
+              newCanvasElem1.classList.add(`before`);
+              newCanvasElem2.classList.add(`after`);
 
-            newCanvasElem2.width = item.data.after.width;
-            newCanvasElem2.height = item.data.after.height;
+              newCanvasElem1.width = item.data.before.width;
+              newCanvasElem1.height = item.data.before.height;
 
-            const ctx1 = newCanvasElem1.getContext(`2d`);
-            const ctx2 = newCanvasElem2.getContext(`2d`);
-            if (ctx1 != null) {
-              ctx1.putImageData(item.data.before, 0, 0);
-            }
+              newCanvasElem2.width = item.data.after.width;
+              newCanvasElem2.height = item.data.after.height;
 
-            if (ctx2 != null) {
-              ctx2.putImageData(item.data.after, 0, 0);
+              const ctx1 = newCanvasElem1.getContext(`2d`);
+              const ctx2 = newCanvasElem2.getContext(`2d`);
+              if (ctx1 != null) {
+                ctx1.putImageData(item.data.before, 0, 0);
+              }
+
+              if (ctx2 != null) {
+                ctx2.putImageData(item.data.after, 0, 0);
+              }
+
+              return (
+                <div 
+                  class={style.historyItem} 
+                  classList={{ [style.currentStep]: isCurrentStep() }}
+                >
+                  <div class={style.before}>{newCanvasElem1}</div>
+                  <div class={style.after}>{newCanvasElem2}</div>
+                </div>
+              );
             }
 
             return (
-              <div class={style.historyItem}>
-                <div class={style.before}>{newCanvasElem1}</div>
-                <div class={style.after}>{newCanvasElem2}</div>
+              <div 
+                class={style.historyItem} 
+                classList={{ [style.currentStep]: isCurrentStep() }}
+              >
+                <span class={style.unknown}>
+                  no visualizer for HistoryItem type: {item.type}
+                </span>
               </div>
             );
-          }
-
-          return (
-            <div class={style.historyItem}>
-              <span class={style.unknown}>
-                no visualizer for HistoryItem type: {item.type}
-              </span>
-            </div>
-          );
-        }}
-      </For>
+          }}
+        </For>
+      </div>
+      
     </div>
   );
 };

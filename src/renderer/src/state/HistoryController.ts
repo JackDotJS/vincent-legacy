@@ -5,8 +5,10 @@ import { Accessor, createSignal, Setter } from 'solid-js';
 type RepeaterMode = `forward`|`reverse`;
 
 class HistoryController {
-  step: number = -1;
-  repeaterMode: RepeaterMode = `reverse`;
+  getStep: Accessor<number>;
+  setStep: Setter<number>;
+  getRepeaterMode: Accessor<RepeaterMode>;
+  setRepeaterMode: Setter<RepeaterMode>;
   getHistory: Accessor<HistoryItem[]>;
   setHistory: Setter<HistoryItem[]>;
 
@@ -15,40 +17,49 @@ class HistoryController {
     this.getHistory = history;
     this.setHistory = setHistory;
 
+    const [ step, setStep ] = createSignal<number>(-1);
+    this.getStep = step;
+    this.setStep = setStep;
+
+    const [ repeaterMode, setRepeaterMode ] = createSignal<RepeaterMode>(`forward`);
+    this.getRepeaterMode = repeaterMode;
+    this.setRepeaterMode = setRepeaterMode;
+
+
     // eslint-disable-next-line solid/reactivity 
     subscribeEvent(`generic.undo`, null, () => {
-      if ((this.step - 1) < 0 && this.repeaterMode === `reverse`) {
+      if ((this.getStep() - 1) < 0 && this.getRepeaterMode() === `reverse`) {
         console.debug(`reached end of undo history`);
         return;
       }
     
-      if (this.repeaterMode === `reverse`) {
-        this.step--;
+      if (this.getRepeaterMode() === `reverse`) {
+        this.setStep(old => old - 1);
       } else {
-        this.repeaterMode = `reverse`;
+        this.setRepeaterMode(`reverse`);
       }
     
-      const historyItem = history()[this.step];
-      console.debug(this.step, historyItem);
+      const historyItem = history()[this.getStep()];
+      console.debug(this.getStep(), historyItem);
     
       this.updateData(historyItem.data.before, historyItem);
     });
     
     // eslint-disable-next-line solid/reactivity 
     subscribeEvent(`generic.redo`, null, () => {
-      if ((this.step + 1) === history().length && this.repeaterMode === `forward`) {
+      if ((this.getStep() + 1) === history().length && this.getRepeaterMode() === `forward`) {
         console.debug(`reached end of redo history`);
         return;
       }
     
-      if (this.repeaterMode === `forward`) {
-        this.step++;
+      if (this.getRepeaterMode() === `forward`) {
+        this.setStep(old => old + 1);
       } else {
-        this.repeaterMode = `forward`;
+        this.setRepeaterMode(`forward`);
       }
     
-      const historyItem = history()[this.step];
-      console.debug(this.step, historyItem);
+      const historyItem = history()[this.getStep()];
+      console.debug(this.getStep(), historyItem);
     
       this.updateData(historyItem.data.after, historyItem);
     });
@@ -58,19 +69,19 @@ class HistoryController {
     // FIXME: overwrite logic can get fucked up a bit if 
     // the user has performed a redo beforehand.
     if (
-      this.step > -1 
-      && (this.getHistory().length > (this.step + 1) || this.repeaterMode === `reverse`)
+      this.getStep() > -1 
+      && (this.getHistory().length > (this.getStep() + 1) || this.getRepeaterMode() === `reverse`)
     ) {
       console.debug(`overwriting history`);
       this.setHistory((old) => {
-        old.splice(this.step);
+        old.splice(this.getStep());
         return old;
       });
     } else {
-      this.step++;
+      this.setStep(old => old + 1);
     }
   
-    this.repeaterMode = `forward`;
+    this.setRepeaterMode(`forward`);
     this.setHistory((old) => [...old, data]);
   }
 

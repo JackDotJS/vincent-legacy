@@ -1,9 +1,20 @@
 .debugWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.debugInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.historyItemList {
   display: flex;
   flex-direction: row;
   overflow-x: scroll;
   height: 15rem;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .historyItem {
@@ -16,14 +27,20 @@
   gap: 1px;
 }
 
+.currentStep {
+  background-color: #b5ddff;
+}
+
 .before, .after {
-  height: 10rem;
-  max-width: 15rem;
+  width: fit-content;
+  height: fit-content;
 }
 
 :where(.before, .after) canvas {
-  max-width: 100%;
-  max-height: 100%;
+  max-width: 10rem;
+  max-height: 10rem;
+  aspect-ratio: auto;
+  background-color: white;
 }
 
 .before > * {
