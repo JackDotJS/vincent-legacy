@@ -1,5 +1,5 @@
 import { For, JSXElement, useContext } from 'solid-js';
-import { StateContext } from './StateController';
+import { StateContext } from '../../state/StateController';
 import style from './HistoryDebugger.module.css';
 
 const HistoryDebugger = (): JSXElement => {

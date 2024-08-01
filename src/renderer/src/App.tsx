@@ -5,7 +5,7 @@ import OptionsWrapper from './components/options/OptionsWrapper';
 // import RandomColorTarget from './components/RandomColorTarget';
 import MenuBar from './components/MenuBar';
 import ViewPort from './components/viewport/ViewPort';
-import HistoryDebugger from './state/HistoryDebugger';
+import HistoryDebugger from './components/debug/HistoryDebugger';
 // import { DropDownCollection } from './components/common/DropDownCollection';
 // import DropDown from './components/common/DropDown';
 
