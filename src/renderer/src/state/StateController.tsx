@@ -5,6 +5,7 @@ import * as i18n from "@solid-primitives/i18n";
 import { deepEquals } from "../../../common/deepEquals";
 import { trackDeep } from "@solid-primitives/deep";
 import HistoryController from "./HistoryController";
+import './GlobalEventEmitter';
 
 interface VincentState {
   optionsOpen: boolean,

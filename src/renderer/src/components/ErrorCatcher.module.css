@@ -1,0 +1,42 @@
+.wrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: lightgray;
+}
+
+.errorBox {
+  padding: 1rem;
+  border-radius: 1rem;
+  width: 40rem;
+  border: 1px solid lightgray;
+}
+
+.errorBox h1 {
+  font-size: 3rem;
+  font-weight: normal;
+  margin: 1rem;
+  margin-top: 0;
+}
+
+.errorMessage {
+  background-color: #333;
+  color: pink;
+  max-height: 20rem;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.errorButton {
+  width: 8rem;
+  height: 2.5rem;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}

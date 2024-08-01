@@ -1,14 +1,13 @@
+import { ErrorBoundary } from 'solid-js';
 import { render } from 'solid-js/web';
-import { StateController } from './state/StateController';
 import App from './App';
+import ErrorScreen from './components/ErrorCatcher';
 import './global.css';
-import './state/GlobalEventEmitter';
-import './util/keyComboListener';
 
 render(() => {
   return (
-    <StateController>
+    <ErrorBoundary fallback={(err, reset) => <ErrorScreen err={err} reset={reset} />}>
       <App />
-    </StateController>
+    </ErrorBoundary>
   );
 }, document.body);

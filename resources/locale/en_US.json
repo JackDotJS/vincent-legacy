@@ -41,5 +41,11 @@
     "help": {
       "github": "GitHub"
     }
+  },
+  "error": {
+    "title": "Error",
+    "summary": "Looks like something real bad happened. Sorry about that...",
+    "technical": "Tech-savvy folks might be able to do something useful with this error message:",
+    "conclusion": "If this keeps happening, please report it on Vincent's GitHub issue tracker. Otherwise, you can try reloading the app."
   }
 }
