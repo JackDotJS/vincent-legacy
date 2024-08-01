@@ -9,6 +9,9 @@ import './GlobalEventEmitter';
 
 interface VincentState {
   optionsOpen: boolean,
+  modalOpen: boolean,
+  modalTitle: string,
+  modalContents: JSXElement | null,
   canvas: HTMLCanvasElement | null,
   hiddenCanvas: HTMLCanvasElement | null,
   history: typeof HistoryController
@@ -19,6 +22,9 @@ export const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(
 
 export const [ state, setState ] = createStore<VincentState>({
   optionsOpen: false,
+  modalOpen: false,
+  modalTitle: `Modal`,
+  modalContents: null,
   canvas: null,
   hiddenCanvas: null,
   history: HistoryController

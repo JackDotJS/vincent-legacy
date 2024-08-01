@@ -28,30 +28,6 @@ const ViewPort = (): JSXElement => {
 
   let cursorElem!: HTMLDivElement;
   let canvasWrapperElem!: HTMLDivElement;
-  let widthElem!: HTMLInputElement;
-  let heightElem!: HTMLInputElement;
-
-  const validateNumber = (value: string): number => {
-    const parsed = parseInt(value);
-    if (isNaN(parsed)) return 0;
-    return parsed;
-  };
-
-  const setWidth = (value: string): void => {
-    const valAsNumber = validateNumber(value);
-    canvasElem.width = valAsNumber;
-    canvasElem.style.width = valAsNumber + `px`;
-    hiddenCanvasElem.width = valAsNumber;
-    hiddenCanvasElem.style.width = valAsNumber + `px`;
-  };
-
-  const setHeight = (value: string): void => {
-    const valAsNumber = validateNumber(value);
-    canvasElem.height = valAsNumber;
-    canvasElem.style.height = valAsNumber + `px`;
-    hiddenCanvasElem.height = valAsNumber;
-    hiddenCanvasElem.style.height = valAsNumber + `px`;
-  };
 
   const updateCursor = (ev: PointerEvent): void => {
     cursorElem.style.top = ev.pageY + `px`;
@@ -191,11 +167,6 @@ const ViewPort = (): JSXElement => {
   };
 
   onMount(() => {
-    setWidth(`600`);
-    setHeight(`400`);
-    widthElem.value = canvasElem.width.toString();
-    heightElem.value = canvasElem.height.toString();
-
     setState(`canvas`, canvasElem);
     setState(`hiddenCanvas`, hiddenCanvasElem);
 
@@ -219,15 +190,6 @@ const ViewPort = (): JSXElement => {
   return (
     <div class={style.viewport}>
       <div class={style.tempControls}>
-        <h4>WARNING: CHANGING CANVAS SIZE WILL RESET CANVAS DATA</h4>
-        <label>
-          width:
-          <input type="number" onChange={(ev) => setWidth(ev.target.value)} ref={widthElem} />
-        </label>
-        <label>
-          height: 
-          <input type="number" onChange={(ev) => setHeight(ev.target.value)} ref={heightElem} />
-        </label>
         <label>
           brush size: 
           <input type="number" value={brushSize()} onChange={(ev) => setBrushSize(parseInt(ev.target.value))} />
@@ -251,6 +213,8 @@ const ViewPort = (): JSXElement => {
           ref={cursorElem}
         />
         <canvas
+          width={600}
+          height={400}
           class={style.canvas}
           onPointerDown={(ev) => startDrawing(ev)}
           onPointerEnter={() => setCursorVisible(true)}
@@ -258,6 +222,8 @@ const ViewPort = (): JSXElement => {
           ref={canvasElem}
         />
         <canvas 
+          width={600}
+          height={400}
           class={style.hiddenCanvas}
           ref={hiddenCanvasElem}
         />

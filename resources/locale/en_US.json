@@ -1,6 +1,8 @@
 {
   "helloworld": "Vincent :0!!!!",
   "generic": {
+    "okay": "OK",
+    "cancel": "Cancel",
     "close": "Close"
   },
   "options": {
@@ -40,6 +42,18 @@
   "menubar": {
     "help": {
       "github": "GitHub"
+    }
+  },
+  "modal": {
+    "newfile": {
+      "title": "New File",
+      "width": "Width:",
+      "height": "Height:",
+      "pixels": "pixels",
+      "keepratio": "Keep Aspect Ratio:",
+      "orientation": "Swap Orientation",
+      "color": "Background Color:",
+      "preview": "PREVIEW"
     }
   },
   "error": {

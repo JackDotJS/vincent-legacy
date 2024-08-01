@@ -5,14 +5,16 @@ import OptionsWrapper from './components/options/OptionsWrapper';
 import MenuBar from './components/MenuBar';
 import ViewPort from './components/viewport/ViewPort';
 import HistoryDebugger from './components/debug/HistoryDebugger';
+import ModalBase from './components/modal/ModalBase';
 
 const App = (): JSXElement => {
   return (
     <StateController>
       <MenuBar/>
-      <ViewPort />
-      <HistoryDebugger />
+      <ViewPort/>
+      <HistoryDebugger/>
       <OptionsWrapper/>
+      <ModalBase/>
     </StateController>
   );
 };
