@@ -11,6 +11,7 @@ const ViewPort = (): JSXElement => {
   const [ drawing, setDrawing ] = createSignal(false);
   const [ brushColor, setBrushColor ] = createSignal(`#000000`);
   const [ eraserMode, setEraserMode ] = createSignal(false);
+  const [ rotation, setRotation ] = createSignal<number>(0);
 
   let lastPosX = 0;
   let lastPosY = 0;
@@ -29,17 +30,81 @@ const ViewPort = (): JSXElement => {
   let cursorElem!: HTMLDivElement;
   let canvasWrapperElem!: HTMLDivElement;
 
+  const translatePoint = (
+    absPointX: number, 
+    absPointY: number, 
+    centerX: number, 
+    centerY: number, 
+    rotationDegrees: number
+  ): { x: number, y: number} => {
+    // Get coordinates relative to center point
+    absPointX -= centerX;
+    absPointY -= centerY;
+    
+    // Convert degrees to radians
+    const radians = rotationDegrees * (Math.PI / 180);
+    
+    // Translate rotation
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+    let x = (absPointX * cos) + (absPointY * sin);
+    let y = (-absPointX * sin) + (absPointY * cos);
+    
+    // Round to nearest hundredths place
+    x = Math.floor(x * 100) / 100;
+    y = Math.floor(y * 100) / 100;
+    
+    return {x, y};
+  };
+
+  const getTransform = (matrix: string): { scale: number, angle: number } => {
+    const values = matrix
+      .split(`(`)[1]
+      .split(`)`)[0]
+      .split(`,`);
+
+    const a = parseFloat(values[0]);
+    const b = parseFloat(values[1]);
+    // const c = parseFloat(values[2]);
+    // const d = parseFloat(values[3]);
+
+    const scale = Math.sqrt(a*a + b*b);
+
+    const angle = Math.atan2(b, a) * (180 / Math.PI);
+
+    return { scale, angle };
+  };
+
   const updateCursor = (ev: PointerEvent): void => {
     cursorElem.style.top = ev.pageY + `px`;
     cursorElem.style.left = ev.pageX + `px`;
     cursorElem.style.width = brushSize() + `px`;
     cursorElem.style.height = brushSize() + `px`;
 
-    // console.debug(ev.pageX, ev.pageY);
-    const canvasBox = canvasElem.getBoundingClientRect();
+    // we get the rect of the parent container instead
+    // of the canvas element since rects include css
+    // transforms, which is exaclty what we dont want
+    // in this particular case. i think it's pretty
+    // safe to assume the viewport itself won't be
+    // getting any fancy transformations in the near
+    // future
+    const parentRect = canvasWrapperElem.offsetParent!.getBoundingClientRect();
+    const offsetLeft = parentRect.left + canvasWrapperElem.offsetLeft;
+    const offsetTop = parentRect.top + canvasWrapperElem.offsetTop;
 
-    const curPosX = ev.pageX - canvasBox.left;
-    const curPosY = ev.pageY - canvasBox.top;
+    const cstyle = window.getComputedStyle(canvasWrapperElem);
+    const transform = getTransform(cstyle.getPropertyValue(`transform`));
+
+    const convertedRot = translatePoint(
+      ev.pageX, 
+      ev.pageY, 
+      offsetLeft + (canvasElem.offsetWidth / 2),
+      offsetTop + (canvasElem.offsetHeight / 2),
+      transform.angle
+    );
+
+    const curPosX = convertedRot.x + (canvasElem.offsetWidth / 2);
+    const curPosY = convertedRot.y + (canvasElem.offsetHeight / 2);
     let curSize = brushSize();
 
     // ev.pressure is always either 0 or 0.5 for other pointer types
@@ -50,6 +115,7 @@ const ViewPort = (): JSXElement => {
 
     if (drawing()) {
       // update bounding box data
+      // FIXME: needs to be corrected with new cursor position logic
       const brushMargin = ((curSize / 2) + 1);
       const maxTop = (curPosY - brushMargin);
       const maxLeft = (curPosX - brushMargin);
@@ -202,16 +268,22 @@ const ViewPort = (): JSXElement => {
           eraser mode: 
           <input type="checkbox" onChange={(ev) => setEraserMode(ev.target.checked)} />
         </label>
+        <label>
+          rotate: 
+          <input type="number" value={rotation()} onInput={(ev) => !isNaN(ev.target.valueAsNumber) ? setRotation(ev.target.valueAsNumber) : null} />
+          <input type="range" min="-180" max="180" value={rotation()} onInput={(ev) => setRotation(ev.target.valueAsNumber)} />
+        </label>
       </div>
+      <div 
+        class={style.brushCursor}
+        classList={{ [style.cursorVisible]: cursorVisible() }}
+        ref={cursorElem}
+      />
       <div 
         class={style.canvasWrapper}
         ref={canvasWrapperElem}
+        style={{ transform: `rotate(${rotation()}deg)` }}
       >
-        <div 
-          class={style.brushCursor}
-          classList={{ [style.cursorVisible]: cursorVisible() }}
-          ref={cursorElem}
-        />
         <canvas
           width={600}
           height={400}
