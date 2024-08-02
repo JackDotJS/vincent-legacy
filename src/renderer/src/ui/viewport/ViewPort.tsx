@@ -75,12 +75,7 @@ const ViewPort = (): JSXElement => {
     return { scale, angle };
   };
 
-  const updateCursor = (ev: PointerEvent): void => {
-    cursorElem.style.top = ev.pageY + `px`;
-    cursorElem.style.left = ev.pageX + `px`;
-    cursorElem.style.width = brushSize() + `px`;
-    cursorElem.style.height = brushSize() + `px`;
-
+  const getCursorPositionOnCanvas = (absX: number, absY: number): { x: number, y: number} => {
     // we get the rect of the parent container instead
     // of the canvas element since rects include css
     // transforms, which is exaclty what we dont want
@@ -96,15 +91,26 @@ const ViewPort = (): JSXElement => {
     const transform = getTransform(cstyle.getPropertyValue(`transform`));
 
     const convertedRot = translatePoint(
-      ev.pageX, 
-      ev.pageY, 
+      absX, 
+      absY, 
       offsetLeft + (canvasElem.offsetWidth / 2),
       offsetTop + (canvasElem.offsetHeight / 2),
       transform.angle
     );
 
-    const curPosX = convertedRot.x + (canvasElem.offsetWidth / 2);
-    const curPosY = convertedRot.y + (canvasElem.offsetHeight / 2);
+    return {
+      x: convertedRot.x + (canvasElem.offsetWidth / 2),
+      y: convertedRot.y + (canvasElem.offsetHeight / 2)
+    };
+  };
+
+  const updateCursor = (ev: PointerEvent): void => {
+    cursorElem.style.top = ev.pageY + `px`;
+    cursorElem.style.left = ev.pageX + `px`;
+    cursorElem.style.width = brushSize() + `px`;
+    cursorElem.style.height = brushSize() + `px`;
+
+    const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
     let curSize = brushSize();
 
     // ev.pressure is always either 0 or 0.5 for other pointer types
@@ -117,10 +123,10 @@ const ViewPort = (): JSXElement => {
       // update bounding box data
       // FIXME: needs to be corrected with new cursor position logic
       const brushMargin = ((curSize / 2) + 1);
-      const maxTop = (curPosY - brushMargin);
-      const maxLeft = (curPosX - brushMargin);
-      const maxRight = (curPosX + brushMargin);
-      const maxBottom = (curPosY + brushMargin);
+      const maxTop = (curPos.y - brushMargin);
+      const maxLeft = (curPos.x - brushMargin);
+      const maxRight = (curPos.x + brushMargin);
+      const maxBottom = (curPos.y + brushMargin);
 
       if (maxTop < bbox.top) bbox.top = maxTop;
       if (maxLeft < bbox.left) bbox.left = maxLeft;
@@ -136,8 +142,8 @@ const ViewPort = (): JSXElement => {
           ctx.globalCompositeOperation = `source-over`;
         }
 
-        const dx = (lastPosX - curPosX);
-        const dy = (lastPosY - curPosY);
+        const dx = (lastPosX - curPos.x);
+        const dy = (lastPosY - curPos.y);
         const steps = Math.hypot(dx, dy);
 
         for (let i = 1; i < steps; i++) {
@@ -157,22 +163,22 @@ const ViewPort = (): JSXElement => {
         // draw end circle
         ctx.beginPath();
         ctx.fillStyle = brushColor();
-        ctx.arc(curPosX, curPosY, curSize / 2, 0, 2 * Math.PI);
+        ctx.arc(curPos.x, curPos.y, curSize / 2, 0, 2 * Math.PI);
         ctx.fill();
       }
     }
 
-    lastPosX = curPosX;
-    lastPosY = curPosY;
+    lastPosX = curPos.x;
+    lastPosY = curPos.y;
     lastSize = curSize;
   };
 
   const startDrawing = (ev: PointerEvent): void => {
-    const canvasBox = canvasElem.getBoundingClientRect();
-    bbox.top = ev.pageY - canvasBox.top;
-    bbox.left = ev.pageX - canvasBox.left;
-    bbox.right = ev.pageX - canvasBox.left;
-    bbox.bottom = ev.pageY - canvasBox.top;
+    const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
+    bbox.top = curPos.y;
+    bbox.left = curPos.x;
+    bbox.right = curPos.x;
+    bbox.bottom = curPos.y;
 
     setDrawing(true);
     updateCursor(ev);
