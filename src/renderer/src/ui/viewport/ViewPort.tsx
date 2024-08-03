@@ -12,6 +12,7 @@ const ViewPort = (): JSXElement => {
   const [ brushColor, setBrushColor ] = createSignal(`#000000`);
   const [ eraserMode, setEraserMode ] = createSignal(false);
   const [ rotation, setRotation ] = createSignal<number>(0);
+  const [ scale, setScale ] = createSignal<number>(1);
 
   let lastPosX = 0;
   let lastPosY = 0;
@@ -84,8 +85,17 @@ const ViewPort = (): JSXElement => {
     // getting any fancy transformations in the near
     // future
     const parentRect = canvasWrapperElem.offsetParent!.getBoundingClientRect();
-    const offsetLeft = parentRect.left + canvasWrapperElem.offsetLeft;
-    const offsetTop = parentRect.top + canvasWrapperElem.offsetTop;
+
+    const canvasWidth = canvasElem.offsetWidth * scale();
+    const canvasHeight = canvasElem.offsetHeight * scale();
+
+    const scaledOffsetLeft = canvasWrapperElem.offsetLeft - ((canvasWidth - canvasElem.offsetWidth) / 2);
+    const scaledOffsetTop = canvasWrapperElem.offsetTop - ((canvasHeight - canvasElem.offsetHeight) / 2);
+    
+    const canvasLeft = parentRect.left + scaledOffsetLeft;
+    const canvasTop = parentRect.top + scaledOffsetTop;
+
+    // console.debug(canvasElem.offsetHeight, canvasHeight, canvasWrapperElem.offsetTop, scaledOffsetTop);
 
     const cstyle = window.getComputedStyle(canvasWrapperElem);
     const transform = getTransform(cstyle.getPropertyValue(`transform`));
@@ -93,25 +103,29 @@ const ViewPort = (): JSXElement => {
     const convertedRot = translatePoint(
       absX, 
       absY, 
-      offsetLeft + (canvasElem.offsetWidth / 2),
-      offsetTop + (canvasElem.offsetHeight / 2),
+      canvasLeft + (canvasWidth / 2),
+      canvasTop + (canvasHeight / 2),
       transform.angle
     );
 
+    // console.debug(`translatePoint:`, convertedRot);
+
     return {
-      x: convertedRot.x + (canvasElem.offsetWidth / 2),
-      y: convertedRot.y + (canvasElem.offsetHeight / 2)
+      x: (convertedRot.x + (canvasWidth / 2)) / scale(),
+      y: (convertedRot.y + (canvasHeight / 2)) / scale()
     };
   };
 
   const updateCursor = (ev: PointerEvent): void => {
     cursorElem.style.top = ev.pageY + `px`;
     cursorElem.style.left = ev.pageX + `px`;
-    cursorElem.style.width = brushSize() + `px`;
-    cursorElem.style.height = brushSize() + `px`;
+    cursorElem.style.width = (brushSize() * scale()) + `px`;
+    cursorElem.style.height = (brushSize() * scale()) + `px`;
 
     const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
     let curSize = brushSize();
+
+    // console.debug(curPos);
 
     // ev.pressure is always either 0 or 0.5 for other pointer types
     // so we only use it if an actual pen is being used
@@ -202,30 +216,30 @@ const ViewPort = (): JSXElement => {
     const bboxWidth = Math.abs(bbox.right - bbox.left);
     const bboxHeight = Math.abs(bbox.bottom - bbox.top);
 
-    const beforeData = ctxHidden.getImageData(
-      bbox.left, 
-      bbox.top, 
-      bboxWidth, 
-      bboxHeight
-    );
-
-    ctxHidden.putImageData(
-      ctxMain.getImageData(
-        bbox.left,
-        bbox.top,
-        bboxWidth,
-        bboxHeight
-      ), bbox.left, bbox.top
-    );
-
-    const afterData = ctxHidden.getImageData(
-      bbox.left, 
-      bbox.top, 
-      bboxWidth, 
-      bboxHeight
-    );
-
     if (bboxWidth !== 0 && bboxHeight !== 0) {
+      const beforeData = ctxHidden.getImageData(
+        bbox.left, 
+        bbox.top, 
+        bboxWidth, 
+        bboxHeight
+      );
+  
+      ctxHidden.putImageData(
+        ctxMain.getImageData(
+          bbox.left,
+          bbox.top,
+          bboxWidth,
+          bboxHeight
+        ), bbox.left, bbox.top
+      );
+  
+      const afterData = ctxHidden.getImageData(
+        bbox.left, 
+        bbox.top, 
+        bboxWidth, 
+        bboxHeight
+      );
+
       state.history.addHistoryStep({
         type: `canvas`,
         data: {
@@ -261,6 +275,33 @@ const ViewPort = (): JSXElement => {
 
   return (
     <div class={style.viewport}>
+      <div 
+        class={style.brushCursor}
+        classList={{ [style.cursorVisible]: cursorVisible() }}
+        ref={cursorElem}
+      />
+      <div 
+        class={style.canvasWrapper}
+        ref={canvasWrapperElem}
+        style={{ transform: `scale(${scale()}) rotate(${rotation()}deg)` }}
+      >
+        <canvas
+          width={600}
+          height={400}
+          class={style.canvas}
+          onPointerDown={(ev) => startDrawing(ev)}
+          onPointerEnter={() => setCursorVisible(true)}
+          onPointerLeave={() => setCursorVisible(false)}
+          ref={canvasElem}
+        />
+        <canvas 
+          width={600}
+          height={400}
+          class={style.hiddenCanvas}
+          ref={hiddenCanvasElem}
+        />
+      </div>
+
       <div class={style.tempControls}>
         <label>
           brush size: 
@@ -279,32 +320,11 @@ const ViewPort = (): JSXElement => {
           <input type="number" value={rotation()} onInput={(ev) => !isNaN(ev.target.valueAsNumber) ? setRotation(ev.target.valueAsNumber) : null} />
           <input type="range" min="-180" max="180" value={rotation()} onInput={(ev) => setRotation(ev.target.valueAsNumber)} />
         </label>
-      </div>
-      <div 
-        class={style.brushCursor}
-        classList={{ [style.cursorVisible]: cursorVisible() }}
-        ref={cursorElem}
-      />
-      <div 
-        class={style.canvasWrapper}
-        ref={canvasWrapperElem}
-        style={{ transform: `rotate(${rotation()}deg)` }}
-      >
-        <canvas
-          width={600}
-          height={400}
-          class={style.canvas}
-          onPointerDown={(ev) => startDrawing(ev)}
-          onPointerEnter={() => setCursorVisible(true)}
-          onPointerLeave={() => setCursorVisible(false)}
-          ref={canvasElem}
-        />
-        <canvas 
-          width={600}
-          height={400}
-          class={style.hiddenCanvas}
-          ref={hiddenCanvasElem}
-        />
+        <label>
+          scale: 
+          <input type="number" value={scale()} min="0.25" max="8" onInput={(ev) => !isNaN(ev.target.valueAsNumber) ? setScale(ev.target.valueAsNumber) : null} />
+          <input type="range" min="0.25" max="32" step="0.25" value={scale()} onInput={(ev) => setScale(ev.target.valueAsNumber)} />
+        </label>
       </div>
     </div>
   );
