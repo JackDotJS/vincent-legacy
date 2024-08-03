@@ -2,6 +2,7 @@ import { createSignal, JSXElement, onMount, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
 
 import style from './ViewPort.module.css';
+import { subscribeEvent } from '@renderer/state/GlobalEventEmitter';
 
 const ViewPort = (): JSXElement => {
   const { state, setState } = useContext(StateContext);
@@ -31,6 +32,8 @@ const ViewPort = (): JSXElement => {
   let cursorElem!: HTMLDivElement;
   let canvasWrapperElem!: HTMLDivElement;
 
+  let viewportElem!: HTMLDivElement;
+
   const translatePoint = (
     absPointX: number, 
     absPointY: number, 
@@ -58,7 +61,7 @@ const ViewPort = (): JSXElement => {
     return {x, y};
   };
 
-  const getTransform = (matrix: string): { scale: number, angle: number } => {
+  const getRotation = (matrix: string): number => {
     const values = matrix
       .split(`(`)[1]
       .split(`)`)[0]
@@ -69,11 +72,9 @@ const ViewPort = (): JSXElement => {
     // const c = parseFloat(values[2]);
     // const d = parseFloat(values[3]);
 
-    const scale = Math.sqrt(a*a + b*b);
-
     const angle = Math.atan2(b, a) * (180 / Math.PI);
 
-    return { scale, angle };
+    return angle;
   };
 
   const getCursorPositionOnCanvas = (absX: number, absY: number): { x: number, y: number} => {
@@ -84,28 +85,28 @@ const ViewPort = (): JSXElement => {
     // safe to assume the viewport itself won't be
     // getting any fancy transformations in the near
     // future
-    const parentRect = canvasWrapperElem.offsetParent!.getBoundingClientRect();
+    const viewportRect = viewportElem.getBoundingClientRect();
 
-    const canvasWidth = canvasElem.offsetWidth * scale();
-    const canvasHeight = canvasElem.offsetHeight * scale();
+    const canvasWidth = canvasElem.offsetWidth;
+    const canvasHeight = canvasElem.offsetHeight;
 
     const scaledOffsetLeft = canvasWrapperElem.offsetLeft - ((canvasWidth - canvasElem.offsetWidth) / 2);
     const scaledOffsetTop = canvasWrapperElem.offsetTop - ((canvasHeight - canvasElem.offsetHeight) / 2);
     
-    const canvasLeft = parentRect.left + scaledOffsetLeft;
-    const canvasTop = parentRect.top + scaledOffsetTop;
+    const canvasLeft = viewportRect.left + scaledOffsetLeft;
+    const canvasTop = viewportRect.top + scaledOffsetTop;
 
     // console.debug(canvasElem.offsetHeight, canvasHeight, canvasWrapperElem.offsetTop, scaledOffsetTop);
 
     const cstyle = window.getComputedStyle(canvasWrapperElem);
-    const transform = getTransform(cstyle.getPropertyValue(`transform`));
+    const rotation = getRotation(cstyle.getPropertyValue(`transform`));
 
     const convertedRot = translatePoint(
-      absX, 
-      absY, 
+      absX + viewportElem.scrollLeft, 
+      absY + viewportElem.scrollTop, 
       canvasLeft + (canvasWidth / 2),
       canvasTop + (canvasHeight / 2),
-      transform.angle
+      rotation
     );
 
     // console.debug(`translatePoint:`, convertedRot);
@@ -117,8 +118,8 @@ const ViewPort = (): JSXElement => {
   };
 
   const updateCursor = (ev: PointerEvent): void => {
-    cursorElem.style.top = ev.pageY + `px`;
-    cursorElem.style.left = ev.pageX + `px`;
+    cursorElem.style.top = ev.clientY + `px`;
+    cursorElem.style.left = ev.clientX + `px`;
     cursorElem.style.width = (brushSize() * scale()) + `px`;
     cursorElem.style.height = (brushSize() * scale()) + `px`;
 
@@ -194,6 +195,9 @@ const ViewPort = (): JSXElement => {
     bbox.right = curPos.x;
     bbox.bottom = curPos.y;
 
+    lastPosX = curPos.x;
+    lastPosY = curPos.y;
+
     setDrawing(true);
     updateCursor(ev);
   };
@@ -252,13 +256,43 @@ const ViewPort = (): JSXElement => {
     }
   };
 
+  const forceCentered = (): void => {
+    viewportElem.scrollTop = (viewportElem.scrollHeight - viewportElem.offsetHeight) / 2;
+    viewportElem.scrollLeft = (viewportElem.scrollWidth - viewportElem.offsetWidth) / 2;
+  };
+
+  const updateScale = (newValue: number): void => {
+    if (isNaN(newValue)) return;
+
+    const oldWidth = (canvasElem.width * scale()) + viewportElem.clientWidth;
+    const oldScrollLeft = viewportElem.scrollLeft;
+    const oldMaxScrollLeft = oldWidth - viewportElem.clientWidth;
+
+    const oldHeight = (canvasElem.height * scale()) + viewportElem.clientHeight;
+    const oldScrollTop = viewportElem.scrollTop;
+    const oldMaxScrollTop = oldHeight - viewportElem.clientHeight;
+
+    const newWidth = (canvasElem.width * newValue) + viewportElem.clientWidth;
+    const newMaxScrollLeft = newWidth - viewportElem.clientWidth;
+
+    const newHeight = (canvasElem.height * newValue) + viewportElem.clientHeight;
+    const newMaxScrollTop = newHeight - viewportElem.clientHeight;
+
+    setScale(newValue);
+
+    viewportElem.scrollTop = newMaxScrollTop * (oldScrollTop / oldMaxScrollTop);
+    viewportElem.scrollLeft = newMaxScrollLeft * (oldScrollLeft / oldMaxScrollLeft);
+  };
+
   onMount(() => {
     setState(`canvas`, canvasElem);
     setState(`hiddenCanvas`, hiddenCanvasElem);
 
-    window.addEventListener(`pointermove`, (ev) => {
-      updateCursor(ev);
-    });
+    canvasWrapperElem.style.margin = `${viewportElem.offsetHeight / 2}px ${viewportElem.offsetWidth / 2}px`;
+
+    forceCentered();
+
+    window.addEventListener(`pointermove`, updateCursor);
 
     window.addEventListener(`pointerup`, finishDrawing);
 
@@ -271,37 +305,54 @@ const ViewPort = (): JSXElement => {
     });
 
     window.addEventListener(`pointercancel`, finishDrawing);
+
+    subscribeEvent(`viewport.resetTransform`, null, () => {
+      forceCentered();
+      setRotation(0);
+    });
   });
 
   return (
-    <div class={style.viewport}>
-      <div 
-        class={style.brushCursor}
-        classList={{ [style.cursorVisible]: cursorVisible() }}
-        ref={cursorElem}
-      />
-      <div 
-        class={style.canvasWrapper}
-        ref={canvasWrapperElem}
-        style={{ transform: `scale(${scale()}) rotate(${rotation()}deg)` }}
-      >
-        <canvas
-          width={600}
-          height={400}
-          class={style.canvas}
-          onPointerDown={(ev) => startDrawing(ev)}
-          onPointerEnter={() => setCursorVisible(true)}
-          onPointerLeave={() => setCursorVisible(false)}
-          ref={canvasElem}
+    <>
+      <div class={style.viewport} ref={viewportElem}>
+        <div 
+          class={style.brushCursor}
+          classList={{ [style.cursorVisible]: cursorVisible() }}
+          ref={cursorElem}
         />
-        <canvas 
-          width={600}
-          height={400}
-          class={style.hiddenCanvas}
-          ref={hiddenCanvasElem}
-        />
+        <div 
+          class={style.canvasWrapper}
+          ref={canvasWrapperElem}
+          style={{ 
+            transform: `rotate(${rotation()}deg)`,
+            margin: `${viewportElem.offsetHeight / 2}px ${viewportElem.offsetWidth / 2}px`
+          }}
+        >
+          <canvas
+            width={600}
+            height={400}
+            class={style.canvas}
+            style={{ 
+              width: `${canvasElem.width * scale()}px`,
+              height: `${canvasElem.height * scale()}px` 
+            }}
+            onPointerDown={(ev) => startDrawing(ev)}
+            onPointerEnter={() => setCursorVisible(true)}
+            onPointerLeave={() => setCursorVisible(false)}
+            ref={canvasElem}
+          />
+          <canvas 
+            width={600}
+            height={400}
+            class={style.hiddenCanvas}
+            style={{ 
+              width: `${canvasElem.width * scale()}px`,
+              height: `${canvasElem.height * scale()}px` 
+            }}
+            ref={hiddenCanvasElem}
+          />
+        </div>
       </div>
-
       <div class={style.tempControls}>
         <label>
           brush size: 
@@ -322,11 +373,11 @@ const ViewPort = (): JSXElement => {
         </label>
         <label>
           scale: 
-          <input type="number" value={scale()} min="0.25" max="8" onInput={(ev) => !isNaN(ev.target.valueAsNumber) ? setScale(ev.target.valueAsNumber) : null} />
-          <input type="range" min="0.25" max="32" step="0.25" value={scale()} onInput={(ev) => setScale(ev.target.valueAsNumber)} />
+          <input type="number" value={scale()} min="0.25" max="8" onInput={(ev) => updateScale(ev.target.valueAsNumber)} />
+          <input type="range" min="0.25" max="32" step="0.25" value={scale()} onInput={(ev) => updateScale(ev.target.valueAsNumber)} />
         </label>
       </div>
-    </div>
+    </>
   );
 };
 

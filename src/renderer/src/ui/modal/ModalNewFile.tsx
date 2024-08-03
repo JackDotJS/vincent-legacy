@@ -2,6 +2,7 @@ import { createEffect, createSignal, JSXElement, onMount, useContext } from 'sol
 import { StateContext } from '../../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 import style from './ModalNewFile.module.css';
+import { emit } from '@renderer/state/GlobalEventEmitter';
 
 const NewFileModal = (): JSXElement => {
   const { state, setState, dictionary } = useContext(StateContext);
@@ -79,6 +80,8 @@ const NewFileModal = (): JSXElement => {
 
     state.history.setHistory([]);
     state.history.setStep(-1);
+
+    emit(`viewport.resetTransform`);
 
     setState(`modalOpen`, false);
   };
