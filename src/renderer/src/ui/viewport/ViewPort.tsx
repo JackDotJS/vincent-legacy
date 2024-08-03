@@ -1,4 +1,4 @@
-import { createSignal, JSXElement, onMount, useContext } from 'solid-js';
+import { createEffect, createSignal, JSXElement, onMount, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
 
 import style from './ViewPort.module.css';
@@ -284,6 +284,15 @@ const ViewPort = (): JSXElement => {
     viewportElem.scrollLeft = newMaxScrollLeft * (oldScrollLeft / oldMaxScrollLeft);
   };
 
+  // const updateRotation = (newValue: number): void => {
+    // TODO: this function will be responsible for updating
+    // the canvas rotation with special logic to ensure the 
+    // pan position is relatively the same.
+    //
+    // in other words, rotate the canvas around the center 
+    // of the viewport instead of the center of the canvas.
+  // };
+
   onMount(() => {
     setState(`canvas`, canvasElem);
     setState(`hiddenCanvas`, hiddenCanvasElem);
@@ -310,6 +319,22 @@ const ViewPort = (): JSXElement => {
       forceCentered();
       setRotation(0);
     });
+  });
+
+  createEffect(() => {
+    rotation();
+    scale();
+
+    const canvasRect = canvasElem.getBoundingClientRect();
+    const addedWidth = canvasRect.width - canvasElem.offsetWidth;
+    const addedHeight = canvasRect.height - canvasElem.offsetHeight;
+
+    console.debug(addedWidth, addedHeight);
+
+    const hWidth = (viewportElem.offsetWidth + addedWidth) / 2;
+    const hHeight = (viewportElem.offsetHeight + addedHeight) / 2;
+
+    canvasWrapperElem.style.margin = `${hHeight}px ${hWidth}px`;
   });
 
   return (
