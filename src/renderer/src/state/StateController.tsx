@@ -5,6 +5,7 @@ import * as i18n from "@solid-primitives/i18n";
 import { deepEquals } from "../../../common/deepEquals";
 import { trackDeep } from "@solid-primitives/deep";
 import HistoryController from "./HistoryController";
+import { VincentBaseTool } from '@renderer/api/VincentBaseTool';
 import './GlobalEventEmitter';
 
 interface VincentState {
@@ -12,8 +13,13 @@ interface VincentState {
   modalOpen: boolean,
   modalTitle: string,
   modalContents: JSXElement | null,
-  canvas: HTMLCanvasElement | null,
-  hiddenCanvas: HTMLCanvasElement | null,
+  canvas: {
+    main: HTMLCanvasElement | null,
+    hidden: HTMLCanvasElement | null,
+    wrapper: HTMLDivElement | null,
+    scale: number
+  },
+  tools: VincentBaseTool[],
   history: typeof HistoryController
 }
 
@@ -25,8 +31,13 @@ export const [ state, setState ] = createStore<VincentState>({
   modalOpen: false,
   modalTitle: `Modal`,
   modalContents: null,
-  canvas: null,
-  hiddenCanvas: null,
+  canvas: {
+    main: null,
+    hidden: null,
+    wrapper: null,
+    scale: 1
+  },
+  tools: [],
   history: HistoryController
 });
 

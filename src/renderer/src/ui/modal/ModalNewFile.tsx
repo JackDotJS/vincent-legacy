@@ -11,8 +11,8 @@ const NewFileModal = (): JSXElement => {
 
   const [ bgColor, setBgColor ] = createSignal<string>(`#FFFFFF`);
   const [ keepRatio, setKeepRatio ] = createSignal<boolean>(false);
-  const [ width, setWidth ] = createSignal<number>(state.canvas!.width);
-  const [ height, setHeight ] = createSignal<number>(state.canvas!.height);
+  const [ width, setWidth ] = createSignal<number>(state.canvas.main!.width);
+  const [ height, setHeight ] = createSignal<number>(state.canvas.main!.height);
 
   let previewBox!: HTMLDivElement;
 
@@ -57,18 +57,18 @@ const NewFileModal = (): JSXElement => {
   };
 
   const apply = (): void => {
-    state.canvas!.width = width();
-    state.canvas!.height = height();
-    state.canvas!.style.width = width().toString() + `px`;
-    state.canvas!.style.height = height().toString() + `px`;
+    state.canvas.main!.width = width();
+    state.canvas.main!.height = height();
+    state.canvas.main!.style.width = width().toString() + `px`;
+    state.canvas.main!.style.height = height().toString() + `px`;
 
-    state.hiddenCanvas!.width = width();
-    state.hiddenCanvas!.height = height();
-    state.hiddenCanvas!.style.width = width().toString() + `px`;
-    state.hiddenCanvas!.style.height = height().toString() + `px`;
+    state.canvas.hidden!.width = width();
+    state.canvas.hidden!.height = height();
+    state.canvas.hidden!.style.width = width().toString() + `px`;
+    state.canvas.hidden!.style.height = height().toString() + `px`;
 
-    const ctxMain = state.canvas!.getContext(`2d`);
-    const ctxHidden = state.hiddenCanvas!.getContext(`2d`);
+    const ctxMain = state.canvas.main!.getContext(`2d`);
+    const ctxHidden = state.canvas.hidden!.getContext(`2d`);
 
     if (ctxMain != null && ctxHidden != null) {
       ctxMain.fillStyle = bgColor();

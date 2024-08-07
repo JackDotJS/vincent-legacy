@@ -1,8 +1,9 @@
 import { createEffect, createSignal, JSXElement, onMount, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
+import { subscribeEvent } from '@renderer/state/GlobalEventEmitter';
+import getCursorPositionOnCanvas from '@renderer/util/getCursorPositionOnCanvas';
 
 import style from './ViewPort.module.css';
-import { subscribeEvent } from '@renderer/state/GlobalEventEmitter';
 
 const ViewPort = (): JSXElement => {
   const { state, setState } = useContext(StateContext);
@@ -13,7 +14,6 @@ const ViewPort = (): JSXElement => {
   const [ brushColor, setBrushColor ] = createSignal(`#000000`);
   const [ eraserMode, setEraserMode ] = createSignal(false);
   const [ rotation, setRotation ] = createSignal<number>(0);
-  const [ scale, setScale ] = createSignal<number>(1);
 
   let lastPosX = 0;
   let lastPosY = 0;
@@ -34,94 +34,11 @@ const ViewPort = (): JSXElement => {
 
   let viewportElem!: HTMLDivElement;
 
-  const translatePoint = (
-    absPointX: number, 
-    absPointY: number, 
-    centerX: number, 
-    centerY: number, 
-    rotationDegrees: number
-  ): { x: number, y: number} => {
-    // Get coordinates relative to center point
-    absPointX -= centerX;
-    absPointY -= centerY;
-    
-    // Convert degrees to radians
-    const radians = rotationDegrees * (Math.PI / 180);
-    
-    // Translate rotation
-    const cos = Math.cos(radians);
-    const sin = Math.sin(radians);
-    let x = (absPointX * cos) + (absPointY * sin);
-    let y = (-absPointX * sin) + (absPointY * cos);
-    
-    // Round to nearest hundredths place
-    x = Math.floor(x * 100) / 100;
-    y = Math.floor(y * 100) / 100;
-    
-    return {x, y};
-  };
-
-  const getRotation = (matrix: string): number => {
-    const values = matrix
-      .split(`(`)[1]
-      .split(`)`)[0]
-      .split(`,`);
-
-    const a = parseFloat(values[0]);
-    const b = parseFloat(values[1]);
-    // const c = parseFloat(values[2]);
-    // const d = parseFloat(values[3]);
-
-    const angle = Math.atan2(b, a) * (180 / Math.PI);
-
-    return angle;
-  };
-
-  const getCursorPositionOnCanvas = (absX: number, absY: number): { x: number, y: number} => {
-    // we get the rect of the parent container instead
-    // of the canvas element since rects include css
-    // transforms, which is exaclty what we dont want
-    // in this particular case. i think it's pretty
-    // safe to assume the viewport itself won't be
-    // getting any fancy transformations in the near
-    // future
-    const viewportRect = viewportElem.getBoundingClientRect();
-
-    const canvasWidth = canvasElem.offsetWidth;
-    const canvasHeight = canvasElem.offsetHeight;
-
-    const scaledOffsetLeft = canvasWrapperElem.offsetLeft - ((canvasWidth - canvasElem.offsetWidth) / 2);
-    const scaledOffsetTop = canvasWrapperElem.offsetTop - ((canvasHeight - canvasElem.offsetHeight) / 2);
-    
-    const canvasLeft = viewportRect.left + scaledOffsetLeft;
-    const canvasTop = viewportRect.top + scaledOffsetTop;
-
-    // console.debug(canvasElem.offsetHeight, canvasHeight, canvasWrapperElem.offsetTop, scaledOffsetTop);
-
-    const cstyle = window.getComputedStyle(canvasWrapperElem);
-    const rotation = getRotation(cstyle.getPropertyValue(`transform`));
-
-    const convertedRot = translatePoint(
-      absX + viewportElem.scrollLeft, 
-      absY + viewportElem.scrollTop, 
-      canvasLeft + (canvasWidth / 2),
-      canvasTop + (canvasHeight / 2),
-      rotation
-    );
-
-    // console.debug(`translatePoint:`, convertedRot);
-
-    return {
-      x: (convertedRot.x + (canvasWidth / 2)) / scale(),
-      y: (convertedRot.y + (canvasHeight / 2)) / scale()
-    };
-  };
-
   const updateCursor = (ev: PointerEvent): void => {
     cursorElem.style.top = ev.clientY + `px`;
     cursorElem.style.left = ev.clientX + `px`;
-    cursorElem.style.width = (brushSize() * scale()) + `px`;
-    cursorElem.style.height = (brushSize() * scale()) + `px`;
+    cursorElem.style.width = (brushSize() * state.canvas.scale) + `px`;
+    cursorElem.style.height = (brushSize() * state.canvas.scale) + `px`;
 
     const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
     let curSize = brushSize();
@@ -264,11 +181,11 @@ const ViewPort = (): JSXElement => {
   const updateScale = (newValue: number): void => {
     if (isNaN(newValue)) return;
 
-    const oldWidth = (canvasElem.width * scale()) + viewportElem.clientWidth;
+    const oldWidth = (canvasElem.width * state.canvas.scale) + viewportElem.clientWidth;
     const oldScrollLeft = viewportElem.scrollLeft;
     const oldMaxScrollLeft = oldWidth - viewportElem.clientWidth;
 
-    const oldHeight = (canvasElem.height * scale()) + viewportElem.clientHeight;
+    const oldHeight = (canvasElem.height * state.canvas.scale) + viewportElem.clientHeight;
     const oldScrollTop = viewportElem.scrollTop;
     const oldMaxScrollTop = oldHeight - viewportElem.clientHeight;
 
@@ -278,7 +195,7 @@ const ViewPort = (): JSXElement => {
     const newHeight = (canvasElem.height * newValue) + viewportElem.clientHeight;
     const newMaxScrollTop = newHeight - viewportElem.clientHeight;
 
-    setScale(newValue);
+    setState(`canvas`, `scale`, newValue);
 
     viewportElem.scrollTop = newMaxScrollTop * (oldScrollTop / oldMaxScrollTop);
     viewportElem.scrollLeft = newMaxScrollLeft * (oldScrollLeft / oldMaxScrollLeft);
@@ -294,8 +211,9 @@ const ViewPort = (): JSXElement => {
   // };
 
   onMount(() => {
-    setState(`canvas`, canvasElem);
-    setState(`hiddenCanvas`, hiddenCanvasElem);
+    setState(`canvas`, `main`, canvasElem);
+    setState(`canvas`, `hidden`, hiddenCanvasElem);
+    setState(`canvas`, `wrapper`, canvasWrapperElem);
 
     canvasWrapperElem.style.margin = `${viewportElem.offsetHeight / 2}px ${viewportElem.offsetWidth / 2}px`;
 
@@ -323,7 +241,7 @@ const ViewPort = (): JSXElement => {
 
   createEffect(() => {
     rotation();
-    scale();
+    state.canvas.scale;
 
     const canvasRect = canvasElem.getBoundingClientRect();
     const addedWidth = canvasRect.width - canvasElem.offsetWidth;
@@ -358,8 +276,8 @@ const ViewPort = (): JSXElement => {
             height={400}
             class={style.canvas}
             style={{ 
-              width: `${canvasElem.width * scale()}px`,
-              height: `${canvasElem.height * scale()}px` 
+              width: `${canvasElem.width * state.canvas.scale}px`,
+              height: `${canvasElem.height * state.canvas.scale}px` 
             }}
             onPointerDown={(ev) => startDrawing(ev)}
             onPointerEnter={() => setCursorVisible(true)}
@@ -371,8 +289,8 @@ const ViewPort = (): JSXElement => {
             height={400}
             class={style.hiddenCanvas}
             style={{ 
-              width: `${canvasElem.width * scale()}px`,
-              height: `${canvasElem.height * scale()}px` 
+              width: `${canvasElem.width * state.canvas.scale}px`,
+              height: `${canvasElem.height * state.canvas.scale}px` 
             }}
             ref={hiddenCanvasElem}
           />
@@ -398,8 +316,8 @@ const ViewPort = (): JSXElement => {
         </label>
         <label>
           scale: 
-          <input type="number" value={scale()} min="0.25" max="8" onInput={(ev) => updateScale(ev.target.valueAsNumber)} />
-          <input type="range" min="0.25" max="32" step="0.25" value={scale()} onInput={(ev) => updateScale(ev.target.valueAsNumber)} />
+          <input type="number" value={state.canvas.scale} min="0.25" max="8" onInput={(ev) => updateScale(ev.target.valueAsNumber)} />
+          <input type="range" min="0.25" max="32" step="0.25" value={state.canvas.scale} onInput={(ev) => updateScale(ev.target.valueAsNumber)} />
         </label>
       </div>
     </>
