@@ -8,11 +8,13 @@ import HistoryController from "./HistoryController";
 import { VincentBaseTool } from '@renderer/api/VincentBaseTool';
 import './GlobalEventEmitter';
 
-interface VincentState {
+export interface VincentState {
   optionsOpen: boolean,
-  modalOpen: boolean,
-  modalTitle: string,
-  modalContents: JSXElement | null,
+  modal: {
+    open: boolean,
+    title: string,
+    contents: `none` | `newFile` | `options`
+  },
   canvas: {
     main: HTMLCanvasElement | null,
     hidden: HTMLCanvasElement | null,
@@ -28,9 +30,11 @@ export const [ config, setConfig ] = createStore<VincentConfig>(structuredClone(
 
 export const [ state, setState ] = createStore<VincentState>({
   optionsOpen: false,
-  modalOpen: false,
-  modalTitle: `Modal`,
-  modalContents: null,
+  modal: {
+    open: false,
+    title: `Modal`,
+    contents: `none`
+  },
   canvas: {
     main: null,
     hidden: null,

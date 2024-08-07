@@ -1,10 +1,9 @@
 import { subscribeEvent } from "../state/GlobalEventEmitter";
 import { setState } from "./StateController";
-import NewFileModal from "../ui/modal/ModalNewFile";
 
 subscribeEvent(`file.new`, null, () => {
-  setState(`modalContents`, NewFileModal);
-  setState(`modalOpen`, true);
+  setState(`modal`, `contents`, `newFile`);
+  setState(`modal`, `open`, true);
 });
 
 subscribeEvent(`menu.options.open`, null, () => {

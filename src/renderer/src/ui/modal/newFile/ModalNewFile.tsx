@@ -1,5 +1,5 @@
 import { createEffect, createSignal, JSXElement, onMount, useContext } from 'solid-js';
-import { StateContext } from '../../state/StateController';
+import { StateContext } from '../../../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 import style from './ModalNewFile.module.css';
 import { emit } from '@renderer/state/GlobalEventEmitter';
@@ -83,7 +83,7 @@ const NewFileModal = (): JSXElement => {
 
     emit(`viewport.resetTransform`);
 
-    setState(`modalOpen`, false);
+    setState(`modal`, `open`, false);
   };
 
   const aspectRatioText = (): string => {
@@ -95,7 +95,7 @@ const NewFileModal = (): JSXElement => {
   };
 
   onMount(() => {
-    setState(`modalTitle`, t(`modal.newfile.title`));
+    setState(`modal`, `title`, t(`modal.newfile.title`));
   });
 
   createEffect(() => {
@@ -138,7 +138,7 @@ const NewFileModal = (): JSXElement => {
       </div>
       <div class={style.modalButtons}>
         <button onClick={() => apply()}>{t(`generic.okay`)}</button>
-        <button onClick={() => setState(`modalOpen`, false)}>{t(`generic.cancel`)}</button>
+        <button onClick={() => setState(`modal`, `open`, false)}>{t(`generic.cancel`)}</button>
       </div>
     </>
   );
