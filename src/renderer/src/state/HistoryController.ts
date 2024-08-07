@@ -94,8 +94,8 @@ class HistoryController {
     historyItem: HistoryItem
   ): void {
     if (historyItem.type === `canvas`) {
-      const ctxMain = state.canvas!.getContext(`2d`);
-      const ctxHidden = state.hiddenCanvas!.getContext(`2d`);
+      const ctxMain = state.canvas.main!.getContext(`2d`);
+      const ctxHidden = state.canvas.main!.getContext(`2d`);
   
       if (ctxMain == null || ctxHidden == null) return;
       ctxMain.putImageData(newData as ImageData, historyItem.x, historyItem.y);
