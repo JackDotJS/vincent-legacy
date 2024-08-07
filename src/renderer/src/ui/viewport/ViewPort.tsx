@@ -1,177 +1,21 @@
-import { createEffect, createSignal, JSXElement, onMount, useContext } from 'solid-js';
+import { createEffect, createSignal, For, JSXElement, onMount, useContext } from 'solid-js';
 import { StateContext } from '../../state/StateController';
 import { subscribeEvent } from '@renderer/state/GlobalEventEmitter';
-import getCursorPositionOnCanvas from '@renderer/util/getCursorPositionOnCanvas';
 
 import style from './ViewPort.module.css';
+import { VincentBaseTool } from '@renderer/api/VincentBaseTool';
 
 const ViewPort = (): JSXElement => {
   const { state, setState } = useContext(StateContext);
 
-  const [ brushSize, setBrushSize ] = createSignal(10);
-  const [ cursorVisible, setCursorVisible ] = createSignal(false);
-  const [ drawing, setDrawing ] = createSignal(false);
-  const [ brushColor, setBrushColor ] = createSignal(`#000000`);
-  const [ eraserMode, setEraserMode ] = createSignal(false);
   const [ rotation, setRotation ] = createSignal<number>(0);
-
-  let lastPosX = 0;
-  let lastPosY = 0;
-  let lastSize = brushSize();
-
-  const bbox = {
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0
-  };
+  const [ toolWidgets, setToolWidgets ] = createSignal<JSXElement>(``);
+  const [ tempOptions, setTempOptions ] = createSignal<JSXElement>(``);
 
   let canvasElem!: HTMLCanvasElement;
   let hiddenCanvasElem!: HTMLCanvasElement;
-
-  let cursorElem!: HTMLDivElement;
   let canvasWrapperElem!: HTMLDivElement;
-
   let viewportElem!: HTMLDivElement;
-
-  const updateCursor = (ev: PointerEvent): void => {
-    cursorElem.style.top = ev.clientY + `px`;
-    cursorElem.style.left = ev.clientX + `px`;
-    cursorElem.style.width = (brushSize() * state.canvas.scale) + `px`;
-    cursorElem.style.height = (brushSize() * state.canvas.scale) + `px`;
-
-    const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
-    let curSize = brushSize();
-
-    // console.debug(curPos);
-
-    // ev.pressure is always either 0 or 0.5 for other pointer types
-    // so we only use it if an actual pen is being used
-    if (ev.pointerType === `pen`) {
-      curSize = ev.pressure * brushSize();
-    }
-
-    if (drawing()) {
-      // update bounding box data
-      // FIXME: needs to be corrected with new cursor position logic
-      const brushMargin = ((curSize / 2) + 1);
-      const maxTop = (curPos.y - brushMargin);
-      const maxLeft = (curPos.x - brushMargin);
-      const maxRight = (curPos.x + brushMargin);
-      const maxBottom = (curPos.y + brushMargin);
-
-      if (maxTop < bbox.top) bbox.top = maxTop;
-      if (maxLeft < bbox.left) bbox.left = maxLeft;
-      if (maxRight > bbox.right) bbox.right = maxRight;
-      if (maxBottom > bbox.bottom) bbox.bottom = maxBottom;
-
-      const ctx = canvasElem.getContext(`2d`);
-
-      if (ctx != null) {
-        if (eraserMode()) {
-          ctx.globalCompositeOperation = `destination-out`;
-        } else {
-          ctx.globalCompositeOperation = `source-over`;
-        }
-
-        const dx = (lastPosX - curPos.x);
-        const dy = (lastPosY - curPos.y);
-        const steps = Math.hypot(dx, dy);
-
-        for (let i = 1; i < steps; i++) {
-          const stepLengthX = dx * (i / steps);
-          const stepLengthY = dy * (i / steps);
-
-          const mx = lastPosX - stepLengthX;
-          const my = lastPosY - stepLengthY;
-          const ms = ((lastSize) - (curSize)) * (1 - (i / steps)) + (curSize);
-
-          ctx.beginPath();
-          ctx.fillStyle = brushColor();
-          ctx.arc(mx, my, ms / 2, 0, 2 * Math.PI);
-          ctx.fill();
-        }
-        
-        // draw end circle
-        ctx.beginPath();
-        ctx.fillStyle = brushColor();
-        ctx.arc(curPos.x, curPos.y, curSize / 2, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-    }
-
-    lastPosX = curPos.x;
-    lastPosY = curPos.y;
-    lastSize = curSize;
-  };
-
-  const startDrawing = (ev: PointerEvent): void => {
-    const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
-    bbox.top = curPos.y;
-    bbox.left = curPos.x;
-    bbox.right = curPos.x;
-    bbox.bottom = curPos.y;
-
-    lastPosX = curPos.x;
-    lastPosY = curPos.y;
-
-    setDrawing(true);
-    updateCursor(ev);
-  };
-
-  const finishDrawing = (): void => {
-    if (!drawing()) return;
-    setDrawing(false);
-
-    const ctxMain = canvasElem.getContext(`2d`);
-    const ctxHidden = hiddenCanvasElem.getContext(`2d`);
-
-    if (ctxMain == null || ctxHidden == null) return;
-
-    // clamp bounding box to canvas bounds
-    bbox.top = Math.min(canvasElem.height, Math.max(bbox.top, 0));
-    bbox.left = Math.min(canvasElem.width, Math.max(bbox.left, 0));
-    bbox.right = Math.min(canvasElem.width, Math.max(bbox.right, 0));
-    bbox.bottom = Math.min(canvasElem.height, Math.max(bbox.bottom, 0));
-
-    const bboxWidth = Math.abs(bbox.right - bbox.left);
-    const bboxHeight = Math.abs(bbox.bottom - bbox.top);
-
-    if (bboxWidth !== 0 && bboxHeight !== 0) {
-      const beforeData = ctxHidden.getImageData(
-        bbox.left, 
-        bbox.top, 
-        bboxWidth, 
-        bboxHeight
-      );
-  
-      ctxHidden.putImageData(
-        ctxMain.getImageData(
-          bbox.left,
-          bbox.top,
-          bboxWidth,
-          bboxHeight
-        ), bbox.left, bbox.top
-      );
-  
-      const afterData = ctxHidden.getImageData(
-        bbox.left, 
-        bbox.top, 
-        bboxWidth, 
-        bboxHeight
-      );
-
-      state.history.addHistoryStep({
-        type: `canvas`,
-        data: {
-          before: beforeData, 
-          after: afterData
-        },
-        x: bbox.left,
-        y: bbox.top
-      });
-    }
-  };
 
   const forceCentered = (): void => {
     viewportElem.scrollTop = (viewportElem.scrollHeight - viewportElem.offsetHeight) / 2;
@@ -219,24 +63,49 @@ const ViewPort = (): JSXElement => {
 
     forceCentered();
 
-    window.addEventListener(`pointermove`, updateCursor);
+    viewportElem.addEventListener(`pointerenter`, (ev: PointerEvent) => {
+      state.tools.list[state.tools.selected].pointerEnter(ev);
+    });
 
-    window.addEventListener(`pointerup`, finishDrawing);
+    viewportElem.addEventListener(`pointerdown`, (ev: PointerEvent) => {
+      state.tools.list[state.tools.selected].pointerDown(ev);
+    });
+
+    window.addEventListener(`pointermove`, (ev) => {
+      state.tools.list[state.tools.selected].pointerMove(ev);
+    });
+
+    window.addEventListener(`pointerrawupdate`, (ev) => {
+      state.tools.list[state.tools.selected].pointerChange(ev as PointerEvent);
+    });
+
+    window.addEventListener(`pointerup`, (ev) => {
+      state.tools.list[state.tools.selected].pointerUp(ev);
+    });
 
     window.addEventListener(`pointerout`, (ev: PointerEvent) => {
-      if (ev.pointerType === `pen`) finishDrawing();
+      state.tools.list[state.tools.selected].pointerOut(ev);
     });
 
     window.addEventListener(`pointerleave`, (ev: PointerEvent) => {
-      if (ev.pointerType === `pen`) finishDrawing();
+      state.tools.list[state.tools.selected].pointerLeave(ev);
     });
 
-    window.addEventListener(`pointercancel`, finishDrawing);
+    window.addEventListener(`pointercancel`, (ev) => {
+      state.tools.list[state.tools.selected].pointerCancel(ev);
+    });
 
     subscribeEvent(`viewport.resetTransform`, null, () => {
       forceCentered();
       setRotation(0);
     });
+  });
+
+  createEffect(() => {
+    state.tools.selected;
+    const currentTool = state.tools.list[state.tools.selected];
+    setToolWidgets(currentTool.getWidgets());
+    setTempOptions(currentTool.getOptionsComponent());
   });
 
   createEffect(() => {
@@ -258,11 +127,9 @@ const ViewPort = (): JSXElement => {
   return (
     <>
       <div class={style.viewport} ref={viewportElem}>
-        <div 
-          class={style.brushCursor}
-          classList={{ [style.cursorVisible]: cursorVisible() }}
-          ref={cursorElem}
-        />
+        <div class={style.widgetsWrapper}>
+          {toolWidgets()}
+        </div>
         <div 
           class={style.canvasWrapper}
           ref={canvasWrapperElem}
@@ -279,9 +146,6 @@ const ViewPort = (): JSXElement => {
               width: `${canvasElem.width * state.canvas.scale}px`,
               height: `${canvasElem.height * state.canvas.scale}px` 
             }}
-            onPointerDown={(ev) => startDrawing(ev)}
-            onPointerEnter={() => setCursorVisible(true)}
-            onPointerLeave={() => setCursorVisible(false)}
             ref={canvasElem}
           />
           <canvas 
@@ -297,18 +161,16 @@ const ViewPort = (): JSXElement => {
         </div>
       </div>
       <div class={style.tempControls}>
-        <label>
-          brush size: 
-          <input type="number" value={brushSize()} onChange={(ev) => setBrushSize(parseInt(ev.target.value))} />
-        </label>
-        <label>
-          brush color: 
-          <input type="color" value={brushColor()} onChange={(ev) => setBrushColor(ev.target.value)} />
-        </label>
-        <label>
-          eraser mode: 
-          <input type="checkbox" onChange={(ev) => setEraserMode(ev.target.checked)} />
-        </label>
+        <select onChange={(ev) => setState(`tools`, `selected`, parseInt(ev.target.value))}>
+          <For each={state.tools.list}>
+            {(item: VincentBaseTool, index) => {
+              return (
+                <option value={index()}>{item.name}</option>
+              );
+            }}
+          </For>
+        </select>
+        {tempOptions()}
         <label>
           rotate: 
           <input type="number" value={rotation()} onInput={(ev) => !isNaN(ev.target.valueAsNumber) ? setRotation(ev.target.valueAsNumber) : null} />

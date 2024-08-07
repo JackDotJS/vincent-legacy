@@ -25,7 +25,6 @@ class HistoryController {
     this.getRepeaterMode = repeaterMode;
     this.setRepeaterMode = setRepeaterMode;
 
-
     // eslint-disable-next-line solid/reactivity 
     subscribeEvent(`history.undo`, null, () => {
       if ((this.getStep() - 1) < 0 && this.getRepeaterMode() === `reverse`) {
