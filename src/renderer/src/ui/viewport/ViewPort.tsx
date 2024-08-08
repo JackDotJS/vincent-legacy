@@ -14,6 +14,8 @@ const ViewPort = (): JSXElement => {
 
   let canvasElem!: HTMLCanvasElement;
   let hiddenCanvasElem!: HTMLCanvasElement;
+  let selectionCanvasElem!: HTMLCanvasElement;
+  let hiddenSelectionCanvasElem!: HTMLCanvasElement;
   let canvasWrapperElem!: HTMLDivElement;
   let viewportElem!: HTMLDivElement;
 
@@ -57,6 +59,8 @@ const ViewPort = (): JSXElement => {
   onMount(() => {
     setState(`canvas`, `main`, canvasElem);
     setState(`canvas`, `hidden`, hiddenCanvasElem);
+    setState(`canvas`, `selection`, selectionCanvasElem);
+    setState(`canvas`, `hiddenSelection`, hiddenSelectionCanvasElem);
     setState(`canvas`, `wrapper`, canvasWrapperElem);
 
     canvasWrapperElem.style.margin = `${viewportElem.offsetHeight / 2}px ${viewportElem.offsetWidth / 2}px`;
@@ -148,14 +152,23 @@ const ViewPort = (): JSXElement => {
             }}
             ref={canvasElem}
           />
+          <canvas
+            id="selectionTest"
+            width={600}
+            height={400}
+            class={style.selectionCanvas}
+            ref={selectionCanvasElem}
+          />
+          <canvas
+            width={600}
+            height={400}
+            class={style.hiddenCanvas}
+            ref={hiddenSelectionCanvasElem}
+          />
           <canvas 
             width={600}
             height={400}
             class={style.hiddenCanvas}
-            style={{ 
-              width: `${canvasElem.width * state.canvas.scale}px`,
-              height: `${canvasElem.height * state.canvas.scale}px` 
-            }}
             ref={hiddenCanvasElem}
           />
         </div>

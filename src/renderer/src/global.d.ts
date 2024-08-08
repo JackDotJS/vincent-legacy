@@ -14,6 +14,16 @@ interface CanvasChange extends BaseHistoryItem {
   y: number
 }
 
+interface CanvasSelectionChange extends BaseHistoryItem {
+  type: `canvasSelection`,
+  data: {
+    before: ImageData,
+    after: ImageData
+  },
+  x: number,
+  y: number
+}
+
 interface TextChange extends BaseHistoryItem {
   type: `text`
   data: {
@@ -106,6 +116,7 @@ declare global {
 
   export type HistoryItem = 
   CanvasChange 
+  | CanvasSelectionChange
   | TextChange 
   | NumberChange 
   | SelectChange 

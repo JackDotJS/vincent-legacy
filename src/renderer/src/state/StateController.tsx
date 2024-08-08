@@ -19,6 +19,8 @@ export interface VincentState {
   canvas: {
     main: HTMLCanvasElement | null,
     hidden: HTMLCanvasElement | null,
+    selection: HTMLCanvasElement | null,
+    hiddenSelection: HTMLCanvasElement | null,
     wrapper: HTMLDivElement | null,
     scale: number
   },
@@ -42,6 +44,8 @@ export const [ state, setState ] = createStore<VincentState>({
   canvas: {
     main: null,
     hidden: null,
+    selection: null,
+    hiddenSelection: null,
     wrapper: null,
     scale: 1
   },

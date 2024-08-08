@@ -43,6 +43,14 @@
   box-shadow: rgba(0,0,0,0.25) 3px 3px 6px;
 }
 
+.canvasWrapper:after {
+  content: '';
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .canvas, .hiddenCanvas {
   image-rendering: pixelated;
   user-select: none;
@@ -60,4 +68,14 @@
   /* touch-action: none;
   pointer-events: none;
   position: absolute; */
+}
+
+.selectionCanvas {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  pointer-events: none;
+  position: absolute;
+  opacity: 0.5;
+  filter: drop-shadow(0 0 1px black);
 }

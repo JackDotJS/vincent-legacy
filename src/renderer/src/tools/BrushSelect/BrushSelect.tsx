@@ -1,13 +1,11 @@
 import { VincentBaseTool } from "@renderer/api/VincentBaseTool";
 import getCursorPositionOnCanvas from "@renderer/util/getCursorPositionOnCanvas";
 import { createSignal, JSXElement } from "solid-js";
-import style from './Paintbrush.module.css';
+import style from './BrushSelect.module.css';
 import { state } from "@renderer/state/StateController";
 
-class PaintbrushTool extends VincentBaseTool {
+class BrushSelectTool extends VincentBaseTool {
   drawing = false;
-
-  selectionArea: ImageData | null = null;
 
   lastPosX = 0;
   lastPosY = 0;
@@ -24,52 +22,40 @@ class PaintbrushTool extends VincentBaseTool {
 
   getBrushSize;
   setBrushSize;
-  getBrushColor;
-  setBrushColor;
+  getSelectMode;
+  setSelectMode;
   getCursorVisible;
   setCursorVisible;
 
   constructor() {
     super({
-      name: `paintbrush`,
+      name: `brushselect`,
       namespace: `vincent`,
-      category: `drawing`
+      category: `selection`
     });
 
     const [ brushSize, setBrushSize ] = createSignal<number>(10);
-    const [ brushColor, setBrushColor ] = createSignal<string>(`#000000`);
+    const [ selectMode, setSelectMode] = createSignal<string>(`replace`);
     const [ cursorVisible, setCursorVisible ] = createSignal<boolean>(false);
     this.getBrushSize = brushSize;
     this.setBrushSize = setBrushSize;
-    this.getBrushColor = brushColor;
-    this.setBrushColor = setBrushColor;
+    this.getSelectMode = selectMode;
+    this.setSelectMode = setSelectMode;
     this.getCursorVisible = cursorVisible;
     this.setCursorVisible = setCursorVisible;
   }
 
   _startDrawing(ev: PointerEvent): void {
-    const selectCtx = state.canvas.selection!.getContext(`2d`);
+    if (this.getSelectMode() === `replace`) {
+      const ctxMain = state.canvas.selection!.getContext(`2d`);
+      const ctxHidden = state.canvas.hiddenSelection!.getContext(`2d`);
 
-    if (selectCtx == null) {
-      throw new Error(`could not get selection canvas context2d`);
-    }
-
-    const selectData = selectCtx.getImageData(0, 0, state.canvas.selection!.width, state.canvas.selection!.height);
-
-    let found = false;
-
-    for (const int of selectData.data) {
-      if (int !== 0) {
-        console.debug(`data found`);
-        this.selectionArea = selectData;
-        found = true;
-        break;
+      if (ctxMain == null || ctxHidden == null) {
+        throw new Error(`could not get canvas context2d!`);
       }
-    }
 
-    if (!found) {
-      this.selectionArea = null;
-      console.debug(`no selection data found`);
+      ctxMain.clearRect(0, 0, state.canvas.selection!.width, state.canvas.selection!.height);
+      ctxHidden.clearRect(0, 0, state.canvas.hiddenSelection!.width, state.canvas.hiddenSelection!.height);
     }
 
     const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
@@ -89,18 +75,18 @@ class PaintbrushTool extends VincentBaseTool {
     if (!this.drawing) return;
     this.drawing = false;
 
-    const ctxMain = state.canvas.main!.getContext(`2d`);
-    const ctxHidden = state.canvas.hidden!.getContext(`2d`);
+    const ctxMain = state.canvas.selection!.getContext(`2d`);
+    const ctxHidden = state.canvas.hiddenSelection!.getContext(`2d`);
 
     if (ctxMain == null || ctxHidden == null) {
       throw new Error(`could not get canvas context2d!`);
     }
 
     // clamp bounding box to canvas bounds
-    this.bbox.top = Math.min(state.canvas.main!.height, Math.max(this.bbox.top, 0));
-    this.bbox.left = Math.min(state.canvas.main!.width, Math.max(this.bbox.left, 0));
-    this.bbox.right = Math.min(state.canvas.main!.width, Math.max(this.bbox.right, 0));
-    this.bbox.bottom = Math.min(state.canvas.main!.height, Math.max(this.bbox.bottom, 0));
+    this.bbox.top = Math.min(state.canvas.selection!.height, Math.max(this.bbox.top, 0));
+    this.bbox.left = Math.min(state.canvas.selection!.width, Math.max(this.bbox.left, 0));
+    this.bbox.right = Math.min(state.canvas.selection!.width, Math.max(this.bbox.right, 0));
+    this.bbox.bottom = Math.min(state.canvas.selection!.height, Math.max(this.bbox.bottom, 0));
 
     const bboxWidth = Math.abs(this.bbox.right - this.bbox.left);
     const bboxHeight = Math.abs(this.bbox.bottom - this.bbox.top);
@@ -130,7 +116,7 @@ class PaintbrushTool extends VincentBaseTool {
       );
 
       state.history.addHistoryStep({
-        type: `canvas`,
+        type: `canvasSelection`,
         data: {
           before: beforeData, 
           after: afterData
@@ -139,23 +125,6 @@ class PaintbrushTool extends VincentBaseTool {
         y: this.bbox.top
       });
     }
-  }
-
-  _masktest(): void {
-    if (this.selectionArea == null) return;
-    const ctx = state.canvas.main!.getContext(`2d`);
-
-    if (ctx == null) {
-      throw new Error(`could not get canvas context2d`);
-    }
-
-    const canvasData = ctx.getImageData(0, 0, state.canvas.main!.width, state.canvas.main!.height);
-
-    for (let i = 0; i < this.selectionArea.data.length; i++) {
-      canvasData.data[i] = canvasData.data[i] * this.selectionArea.data[i] / 255;
-    }
-
-    ctx.putImageData(canvasData, 0, 0);
   }
 
   // TODO: use coalesced events
@@ -193,13 +162,17 @@ class PaintbrushTool extends VincentBaseTool {
       if (maxRight > this.bbox.right) this.bbox.right = maxRight;
       if (maxBottom > this.bbox.bottom) this.bbox.bottom = maxBottom;
 
-      const ctx = state.canvas.main!.getContext(`2d`);
+      const ctx = state.canvas.selection!.getContext(`2d`);
 
       if (ctx == null) {
         throw new Error(`could not get canvas context2d!`);
       }
 
       ctx.globalCompositeOperation = `source-over`;
+
+      // if (eraserMode()) {
+      //   ctx.globalCompositeOperation = `destination-out`;
+      // }
 
       const dx = (this.lastPosX - curPos.x);
       const dy = (this.lastPosY - curPos.y);
@@ -214,20 +187,16 @@ class PaintbrushTool extends VincentBaseTool {
         const ms = ((this.lastSize) - (curSize)) * (1 - (i / steps)) + (curSize);
 
         ctx.beginPath();
-        ctx.fillStyle = this.getBrushColor();
+        ctx.fillStyle = `#FFFFFF`;
         ctx.arc(mx, my, ms / 2, 0, 2 * Math.PI);
         ctx.fill();
       }
       
       // draw end circle
       ctx.beginPath();
-      ctx.fillStyle = this.getBrushColor();
+      ctx.fillStyle = `#FFFFFF`;
       ctx.arc(curPos.x, curPos.y, curSize / 2, 0, 2 * Math.PI);
       ctx.fill();
-
-      if (this.selectionArea != null) {
-        this._masktest();
-      }
     }
 
     this.lastPosX = curPos.x;
@@ -282,8 +251,14 @@ class PaintbrushTool extends VincentBaseTool {
           <input type="number" value={this.getBrushSize()} onChange={(ev) => this.setBrushSize(parseInt(ev.target.value))} />
         </label>
         <label>
-          brush color: 
-          <input type="color" value={this.getBrushColor()} onChange={(ev) => this.setBrushColor(ev.target.value)} />
+          selection mode: 
+          <select onChange={(ev) => this.setSelectMode(ev.target.value)}>
+            <option value="replace">Replace</option>
+            <option value="add">Add</option>
+            <option value="subtract">Subtract</option>
+            <option value="intersect">Intersect</option>
+            <option value="invert">Invert</option>
+          </select>
         </label>
       </>
     );
@@ -291,13 +266,15 @@ class PaintbrushTool extends VincentBaseTool {
 
   getWidgets(): JSXElement {
     return (
-      <div 
-        class={style.brushCursor}
-        classList={{ [style.cursorVisible]: this.getCursorVisible() }}
-        ref={this.cursorElem}
-      />
+      <>
+        <div 
+          class={style.brushCursor}
+          classList={{ [style.cursorVisible]: this.getCursorVisible() }}
+          ref={this.cursorElem}
+        />
+      </>
     );
   }
 }
 
-export default new PaintbrushTool();
+export default new BrushSelectTool();
