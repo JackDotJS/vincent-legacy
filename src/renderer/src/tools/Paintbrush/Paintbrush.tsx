@@ -152,7 +152,7 @@ class PaintbrushTool extends VincentBaseTool {
     const canvasData = ctx.getImageData(0, 0, state.canvas.main!.width, state.canvas.main!.height);
 
     for (let i = 0; i < this.selectionArea.data.length; i++) {
-      canvasData.data[i] = canvasData.data[i] * this.selectionArea.data[i] / 255;
+      canvasData.data[i] = Math.min(canvasData.data[i], this.selectionArea.data[i]);
     }
 
     ctx.putImageData(canvasData, 0, 0);
