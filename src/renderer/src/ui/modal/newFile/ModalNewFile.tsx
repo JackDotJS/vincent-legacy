@@ -3,6 +3,7 @@ import { StateContext } from '../../../state/StateController';
 import * as i18n from '@solid-primitives/i18n';
 import style from './ModalNewFile.module.css';
 import { emit } from '@renderer/state/GlobalEventEmitter';
+import { setCanvasResolution } from '@renderer/util/setCanvasResolution';
 
 const NewFileModal = (): JSXElement => {
   const { state, setState, dictionary } = useContext(StateContext);
@@ -57,25 +58,17 @@ const NewFileModal = (): JSXElement => {
   };
 
   const apply = (): void => {
-    state.canvas.main!.width = width();
-    state.canvas.main!.height = height();
-    state.canvas.main!.style.width = width().toString() + `px`;
-    state.canvas.main!.style.height = height().toString() + `px`;
-
-    state.canvas.hidden!.width = width();
-    state.canvas.hidden!.height = height();
-    state.canvas.hidden!.style.width = width().toString() + `px`;
-    state.canvas.hidden!.style.height = height().toString() + `px`;
+    setCanvasResolution(width(), height());
 
     const ctxMain = state.canvas.main!.getContext(`2d`);
-    const ctxHidden = state.canvas.hidden!.getContext(`2d`);
+    const ctxCommitted = state.canvas.committed!.getContext(`2d`);
 
-    if (ctxMain != null && ctxHidden != null) {
+    if (ctxMain != null && ctxCommitted != null) {
       ctxMain.fillStyle = bgColor();
-      ctxHidden.fillStyle = bgColor();
+      ctxCommitted.fillStyle = bgColor();
 
       ctxMain.fillRect(0, 0, width(), height());
-      ctxHidden.fillRect(0, 0, width(), height());
+      ctxCommitted.fillRect(0, 0, width(), height());
     }
 
     state.history.setHistory([]);
