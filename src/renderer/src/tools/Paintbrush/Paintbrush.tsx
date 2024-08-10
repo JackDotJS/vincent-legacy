@@ -3,6 +3,7 @@ import getCursorPositionOnCanvas from "@renderer/util/getCursorPositionOnCanvas"
 import { createSignal, JSXElement } from "solid-js";
 import style from './Paintbrush.module.css';
 import { state } from "@renderer/state/StateController";
+import { commitCanvasChange } from "@renderer/util/commitCanvasChange";
 
 class PaintbrushTool extends VincentBaseTool {
   drawing = false;
@@ -51,7 +52,7 @@ class PaintbrushTool extends VincentBaseTool {
     const selectCtx = state.canvas.selection!.getContext(`2d`);
 
     if (selectCtx == null) {
-      throw new Error(`could not get selection canvas context2d`);
+      throw new Error(`could not get main/selection canvas context2d`);
     }
 
     const selectData = selectCtx.getImageData(0, 0, state.canvas.selection!.width, state.canvas.selection!.height);
@@ -89,73 +90,40 @@ class PaintbrushTool extends VincentBaseTool {
     if (!this.drawing) return;
     this.drawing = false;
 
-    const ctxMain = state.canvas.main!.getContext(`2d`);
-    const ctxHidden = state.canvas.hidden!.getContext(`2d`);
-
-    if (ctxMain == null || ctxHidden == null) {
-      throw new Error(`could not get canvas context2d!`);
-    }
-
-    // clamp bounding box to canvas bounds
-    this.bbox.top = Math.min(state.canvas.main!.height, Math.max(this.bbox.top, 0));
-    this.bbox.left = Math.min(state.canvas.main!.width, Math.max(this.bbox.left, 0));
-    this.bbox.right = Math.min(state.canvas.main!.width, Math.max(this.bbox.right, 0));
-    this.bbox.bottom = Math.min(state.canvas.main!.height, Math.max(this.bbox.bottom, 0));
-
-    const bboxWidth = Math.abs(this.bbox.right - this.bbox.left);
-    const bboxHeight = Math.abs(this.bbox.bottom - this.bbox.top);
-
-    if (bboxWidth !== 0 && bboxHeight !== 0) {
-      const beforeData = ctxHidden.getImageData(
-        this.bbox.left, 
-        this.bbox.top, 
-        bboxWidth, 
-        bboxHeight
-      );
-  
-      ctxHidden.putImageData(
-        ctxMain.getImageData(
-          this.bbox.left,
-          this.bbox.top,
-          bboxWidth,
-          bboxHeight
-        ), this.bbox.left, this.bbox.top
-      );
-  
-      const afterData = ctxHidden.getImageData(
-        this.bbox.left, 
-        this.bbox.top, 
-        bboxWidth, 
-        bboxHeight
-      );
-
-      state.history.addHistoryStep({
-        type: `canvas`,
-        data: {
-          before: beforeData, 
-          after: afterData
-        },
-        x: this.bbox.left,
-        y: this.bbox.top
-      });
-    }
+    commitCanvasChange();
   }
 
-  _masktest(): void {
+  async _masktest(): Promise<void> {
     if (this.selectionArea == null) return;
-    const ctx = state.canvas.main!.getContext(`2d`);
+    const ctxMain = state.canvas.main!.getContext(`2d`);
+    const ctxCommitted = state.canvas.committed!.getContext(`2d`);
 
-    if (ctx == null) {
+    if (ctxMain == null || ctxCommitted == null) {
       throw new Error(`could not get canvas context2d`);
     }
 
-    const canvasData = ctx.getImageData(0, 0, state.canvas.main!.width, state.canvas.main!.height);
+    const canvasData = ctxMain.getImageData(0, 0, state.canvas.main!.width, state.canvas.main!.height);
+    const committedData = ctxCommitted.getImageData(0, 0, state.canvas.main!.width, state.canvas.main!.height);
 
     for (let i = 0; i < this.selectionArea.data.length; i++) {
-      canvasData.data[i] = Math.min(canvasData.data[i], this.selectionArea.data[i]);
+      // const mixMain = Math.min(canvasData.data[i], this.selectionArea.data[i]);
+      // const mixCommitted = Math.min(committedData.data[i], 255 - this.selectionArea.data[i]);
+
+      const newVal = canvasData.data[i];
+      const oldVal = committedData.data[i];
+      const mix = (255 - this.selectionArea.data[i]);
+
+      canvasData.data[i] = newVal + (oldVal - newVal) * mix;
+
+      //canvasData.data[i] = ((committedData.data[i]) - (canvasData.data[i])) * (255 - this.selectionArea.data[i]) + canvasData.data[i];
     }
 
-    ctx.putImageData(canvasData, 0, 0);
+    // const image = await createImageBitmap(canvasData);
+
+    ctxMain.reset();
+    ctxMain.putImageData(canvasData, 0, 0);
+
+    // image.close();
   }
 
   // TODO: use coalesced events
@@ -180,19 +148,6 @@ class PaintbrushTool extends VincentBaseTool {
     // console.debug(this.drawing);
 
     if (this.drawing) {
-      // update bounding box data
-      // FIXME: needs to be corrected with new cursor position logic
-      const brushMargin = ((curSize / 2) + 1);
-      const maxTop = (curPos.y - brushMargin);
-      const maxLeft = (curPos.x - brushMargin);
-      const maxRight = (curPos.x + brushMargin);
-      const maxBottom = (curPos.y + brushMargin);
-
-      if (maxTop < this.bbox.top) this.bbox.top = maxTop;
-      if (maxLeft < this.bbox.left) this.bbox.left = maxLeft;
-      if (maxRight > this.bbox.right) this.bbox.right = maxRight;
-      if (maxBottom > this.bbox.bottom) this.bbox.bottom = maxBottom;
-
       const ctx = state.canvas.main!.getContext(`2d`);
 
       if (ctx == null) {

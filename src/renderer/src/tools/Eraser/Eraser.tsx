@@ -3,6 +3,7 @@ import getCursorPositionOnCanvas from "@renderer/util/getCursorPositionOnCanvas"
 import { createSignal, JSXElement } from "solid-js";
 import style from './Eraser.module.css';
 import { state } from "@renderer/state/StateController";
+import { commitCanvasChange } from "@renderer/util/commitCanvasChange";
 
 class EraserTool extends VincentBaseTool {
   drawing = false;
@@ -10,13 +11,6 @@ class EraserTool extends VincentBaseTool {
   lastPosX = 0;
   lastPosY = 0;
   lastSize = 0;
-
-  bbox = {
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0
-  };
 
   cursorElem!: HTMLDivElement;
 
@@ -42,10 +36,6 @@ class EraserTool extends VincentBaseTool {
 
   _startDrawing(ev: PointerEvent): void {
     const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
-    this.bbox.top = curPos.y;
-    this.bbox.left = curPos.x;
-    this.bbox.right = curPos.x;
-    this.bbox.bottom = curPos.y;
     
     this.lastPosX = curPos.x;
     this.lastPosY = curPos.y;
@@ -58,56 +48,7 @@ class EraserTool extends VincentBaseTool {
     if (!this.drawing) return;
     this.drawing = false;
 
-    const ctxMain = state.canvas.main!.getContext(`2d`);
-    const ctxHidden = state.canvas.hidden!.getContext(`2d`);
-
-    if (ctxMain == null || ctxHidden == null) {
-      throw new Error(`could not get canvas context2d!`);
-    }
-
-    // clamp bounding box to canvas bounds
-    this.bbox.top = Math.min(state.canvas.main!.height, Math.max(this.bbox.top, 0));
-    this.bbox.left = Math.min(state.canvas.main!.width, Math.max(this.bbox.left, 0));
-    this.bbox.right = Math.min(state.canvas.main!.width, Math.max(this.bbox.right, 0));
-    this.bbox.bottom = Math.min(state.canvas.main!.height, Math.max(this.bbox.bottom, 0));
-
-    const bboxWidth = Math.abs(this.bbox.right - this.bbox.left);
-    const bboxHeight = Math.abs(this.bbox.bottom - this.bbox.top);
-
-    if (bboxWidth !== 0 && bboxHeight !== 0) {
-      const beforeData = ctxHidden.getImageData(
-        this.bbox.left, 
-        this.bbox.top, 
-        bboxWidth, 
-        bboxHeight
-      );
-  
-      ctxHidden.putImageData(
-        ctxMain.getImageData(
-          this.bbox.left,
-          this.bbox.top,
-          bboxWidth,
-          bboxHeight
-        ), this.bbox.left, this.bbox.top
-      );
-  
-      const afterData = ctxHidden.getImageData(
-        this.bbox.left, 
-        this.bbox.top, 
-        bboxWidth, 
-        bboxHeight
-      );
-
-      state.history.addHistoryStep({
-        type: `canvas`,
-        data: {
-          before: beforeData, 
-          after: afterData
-        },
-        x: this.bbox.left,
-        y: this.bbox.top
-      });
-    }
+    commitCanvasChange();
   }
 
   // TODO: use coalesced events
@@ -134,17 +75,6 @@ class EraserTool extends VincentBaseTool {
     if (this.drawing) {
       // update bounding box data
       // FIXME: needs to be corrected with new cursor position logic
-      const brushMargin = ((curSize / 2) + 1);
-      const maxTop = (curPos.y - brushMargin);
-      const maxLeft = (curPos.x - brushMargin);
-      const maxRight = (curPos.x + brushMargin);
-      const maxBottom = (curPos.y + brushMargin);
-
-      if (maxTop < this.bbox.top) this.bbox.top = maxTop;
-      if (maxLeft < this.bbox.left) this.bbox.left = maxLeft;
-      if (maxRight > this.bbox.right) this.bbox.right = maxRight;
-      if (maxBottom > this.bbox.bottom) this.bbox.bottom = maxBottom;
-
       const ctx = state.canvas.main!.getContext(`2d`);
 
       if (ctx == null) {

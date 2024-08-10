@@ -18,9 +18,9 @@ export interface VincentState {
   },
   canvas: {
     main: HTMLCanvasElement | null,
-    hidden: HTMLCanvasElement | null,
+    committed: OffscreenCanvas,
     selection: HTMLCanvasElement | null,
-    hiddenSelection: HTMLCanvasElement | null,
+    committedSelection: OffscreenCanvas,
     wrapper: HTMLDivElement | null,
     scale: number
   },
@@ -43,9 +43,9 @@ export const [ state, setState ] = createStore<VincentState>({
   },
   canvas: {
     main: null,
-    hidden: null,
+    committed: new OffscreenCanvas(600,400),
     selection: null,
-    hiddenSelection: null,
+    committedSelection: new OffscreenCanvas(600,400),
     wrapper: null,
     scale: 1
   },

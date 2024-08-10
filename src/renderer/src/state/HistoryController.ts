@@ -94,16 +94,14 @@ class HistoryController {
   ): void {
     if (historyItem.type === `canvas`) {
       const ctxMain = state.canvas.main!.getContext(`2d`);
-      const ctxHidden = state.canvas.hidden!.getContext(`2d`);
   
-      if (ctxMain == null || ctxHidden == null) return;
+      if (ctxMain == null) return;
       ctxMain.putImageData(newData as ImageData, historyItem.x, historyItem.y);
-      ctxHidden.putImageData(newData as ImageData, historyItem.x, historyItem.y);
     }
 
     if (historyItem.type === `canvasSelection`) {
       const ctxMain = state.canvas.selection!.getContext(`2d`);
-      const ctxHidden = state.canvas.hiddenSelection!.getContext(`2d`);
+      const ctxHidden = state.canvas.committedSelection!.getContext(`2d`);
   
       if (ctxMain == null || ctxHidden == null) return;
       ctxMain.putImageData(newData as ImageData, historyItem.x, historyItem.y);

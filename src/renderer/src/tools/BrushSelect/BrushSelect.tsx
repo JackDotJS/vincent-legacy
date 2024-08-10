@@ -48,14 +48,14 @@ class BrushSelectTool extends VincentBaseTool {
   _startDrawing(ev: PointerEvent): void {
     if (this.getSelectMode() === `replace`) {
       const ctxMain = state.canvas.selection!.getContext(`2d`);
-      const ctxHidden = state.canvas.hiddenSelection!.getContext(`2d`);
+      const ctxHidden = state.canvas.committedSelection!.getContext(`2d`);
 
       if (ctxMain == null || ctxHidden == null) {
         throw new Error(`could not get canvas context2d!`);
       }
 
       ctxMain.clearRect(0, 0, state.canvas.selection!.width, state.canvas.selection!.height);
-      ctxHidden.clearRect(0, 0, state.canvas.hiddenSelection!.width, state.canvas.hiddenSelection!.height);
+      ctxHidden.clearRect(0, 0, state.canvas.selection!.width, state.canvas.selection!.height);
     }
 
     const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
@@ -76,7 +76,7 @@ class BrushSelectTool extends VincentBaseTool {
     this.drawing = false;
 
     const ctxMain = state.canvas.selection!.getContext(`2d`);
-    const ctxHidden = state.canvas.hiddenSelection!.getContext(`2d`);
+    const ctxHidden = state.canvas.committedSelection!.getContext(`2d`);
 
     if (ctxMain == null || ctxHidden == null) {
       throw new Error(`could not get canvas context2d!`);
