@@ -54,7 +54,7 @@ const ViewPort = (): JSXElement => {
     // of the viewport instead of the center of the canvas.
   // };
 
-  onMount(() => {
+  onMount(async () => {
     setState(`canvas`, `main`, canvasElem);
     setState(`canvas`, `selection`, selectionCanvasElem);
     setState(`canvas`, `wrapper`, canvasWrapperElem);
@@ -99,6 +99,66 @@ const ViewPort = (): JSXElement => {
       forceCentered();
       setRotation(0);
     });
+
+    // webgpu test
+
+    const adapter = await navigator.gpu.requestAdapter();
+    const device = await adapter?.requestDevice();
+    if (device == null) {
+      throw new Error(`could not get gpu device`);
+    }
+
+    const ctx = canvasElem.getContext(`webgpu`);
+    if (ctx == null) {
+      throw new Error(`could not get context webgpu`);
+    }
+
+    const pformat = navigator.gpu.getPreferredCanvasFormat();
+    ctx.configure({
+      device,
+      format: pformat
+    });
+
+    const module = device.createShaderModule({
+      label: `red tri shader`,
+      code: (await import(`./test.wgsl?raw`)).default
+    });
+
+    const pipeline = device.createRenderPipeline({
+      label: `red tri pipeline`,
+      layout: `auto`,
+      vertex: { module },
+      fragment: { 
+        module,
+        targets: [
+          { format: pformat }
+        ]
+      }
+    });
+
+    const renderpass: GPURenderPassDescriptor = {
+      label: `red tri renderpass`,
+      colorAttachments: [
+        {
+          view: ctx.getCurrentTexture().createView(),
+          clearValue: [0, 0, 0, 1],
+          loadOp: `clear`,
+          storeOp: `store`
+        }
+      ]
+    };
+
+    const encoder = device.createCommandEncoder({
+      label: `red tri encoder`
+    });
+
+    const pass = encoder.beginRenderPass(renderpass);
+    pass.setPipeline(pipeline);
+    pass.draw(3);
+    pass.end();
+
+    const cbuffer = encoder.finish();
+    device.queue.submit([ cbuffer ]);
   });
 
   createEffect(() => {
