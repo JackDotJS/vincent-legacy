@@ -9,7 +9,7 @@ const localeDir = path.join(app.getAppPath(), `resources`, `locale`);
 console.debug(localeDir);
 
 if (!existsSync(localeDir)) {
-  throw new Error(`locale directory missing, this really shouldn't happen!`)
+  throw new Error(`locale directory missing, this really shouldn't happen!`);
 }
 
 const defaultDictionaryFile = readFileSync(
@@ -20,7 +20,7 @@ const defaultDictionaryFile = readFileSync(
 const defaultDictionary = JSON.parse(defaultDictionaryFile);
 
 export default async (event: IpcMainInvokeEvent, langCode: string): Promise<object> => {
-  console.debug(event);
+  // console.debug(event);
 
   const newDictionaryFile = readFileSync(`${localeDir}/${langCode}.json`, { encoding: `utf-8` });
   const newDictionary = JSON.parse(newDictionaryFile);

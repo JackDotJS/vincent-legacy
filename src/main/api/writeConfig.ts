@@ -2,7 +2,8 @@ import { IpcMainInvokeEvent, app } from 'electron';
 import { writeQ } from '../writeQueue';
 
 export default (event: IpcMainInvokeEvent, ...args: unknown[]): Promise<undefined|Error> => {
-  console.debug(event);
+  event; // stfu eslint
+  // console.debug(event);
 
   console.debug(args[0]);
 

@@ -4,7 +4,8 @@ import defaultConfig from '../../common/defaultConfig.json';
 import { readFile } from 'fs/promises';
 
 export default async (event: IpcMainInvokeEvent): Promise<typeof defaultConfig> => {
-  console.debug(event);
+  event; // stfu eslint
+  // console.debug(event);
 
   const cfgFileLoc = `${app.getPath(`userData`)}/config.json`;
 
