@@ -32,6 +32,7 @@
     "@electron-toolkit/eslint-config-ts": "^2.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@types/node": "^20.14.8",
+    "@webgpu/types": "^0.1.44",
     "electron": "^31.0.2",
     "electron-builder": "^24.13.3",
     "electron-vite": "^2.3.0",
@@ -42,5 +43,5 @@
     "vite": "^5.3.1",
     "vite-plugin-solid": "^2.10.2"
   },
-  "packageManager": "pnpm@9.4.0+sha256.b6fd0bfda555e7e584ad7e56b30c68b01d5a04f9ee93989f4b93ca8473c49c74"
+  "packageManager": "pnpm@9.7.0"
 }

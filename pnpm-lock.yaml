@@ -33,6 +33,9 @@ importers:
       '@types/node':
         specifier: ^20.14.8
         version: 20.14.10
+      '@webgpu/types':
+        specifier: ^0.1.44
+        version: 0.1.44
       electron:
         specifier: ^31.0.2
         version: 31.1.0
@@ -667,6 +670,9 @@ packages:
 
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
+
+  '@webgpu/types@0.1.44':
+    resolution: {integrity: sha512-JDpYJN5E/asw84LTYhKyvPpxGnD+bAKPtpW9Ilurf7cZpxaTbxkQcGwOd7jgB9BPBrTYQ+32ufo4HiuomTjHNQ==}
 
   '@xmldom/xmldom@0.8.10':
     resolution: {integrity: sha512-2WALfTl4xo2SkGCYRt6rDTFfk9R1czmBvUQy12gK2KuRKIpWEhcbbzy8EZXtz/jkRqHX8bFEc6FC1HjX4TUWYw==}
@@ -2710,6 +2716,8 @@ snapshots:
       eslint-visitor-keys: 3.4.3
 
   '@ungap/structured-clone@1.2.0': {}
+
+  '@webgpu/types@0.1.44': {}
 
   '@xmldom/xmldom@0.8.10': {}
 
