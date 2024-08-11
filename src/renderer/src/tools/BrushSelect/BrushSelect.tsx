@@ -56,6 +56,9 @@ class BrushSelectTool extends VincentBaseTool {
 
       ctxMain.clearRect(0, 0, state.canvas.selection!.width, state.canvas.selection!.height);
       ctxHidden.clearRect(0, 0, state.canvas.selection!.width, state.canvas.selection!.height);
+
+      ctxMain.filter = `blur(4px)`;
+      ctxHidden.filter = `blur(4px)`;
     }
 
     const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);

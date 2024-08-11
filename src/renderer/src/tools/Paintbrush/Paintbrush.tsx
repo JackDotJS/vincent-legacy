@@ -106,24 +106,19 @@ class PaintbrushTool extends VincentBaseTool {
     const committedData = ctxCommitted.getImageData(0, 0, state.canvas.main!.width, state.canvas.main!.height);
 
     for (let i = 0; i < this.selectionArea.data.length; i++) {
-      // const mixMain = Math.min(canvasData.data[i], this.selectionArea.data[i]);
-      // const mixCommitted = Math.min(committedData.data[i], 255 - this.selectionArea.data[i]);
+      if (canvasData.data[i] !== committedData.data[i]) {
+        const mixMain = Math.min(canvasData.data[i], this.selectionArea.data[i]);
+        const mixCommitted = Math.min(committedData.data[i], 255 - this.selectionArea.data[i]);
+        const added = Math.min(Math.max(mixMain, mixCommitted), mixMain + mixCommitted);
 
-      const newVal = canvasData.data[i];
-      const oldVal = committedData.data[i];
-      const mix = (255 - this.selectionArea.data[i]);
+        //const lerp = canvasData.data[i] + (this.selectionArea.data[i] - canvasData.data[i]) * (this.selectionArea.data[i] / 255);
 
-      canvasData.data[i] = newVal + (oldVal - newVal) * mix;
-
-      //canvasData.data[i] = ((committedData.data[i]) - (canvasData.data[i])) * (255 - this.selectionArea.data[i]) + canvasData.data[i];
+        canvasData.data[i] = added;
+      }
     }
-
-    // const image = await createImageBitmap(canvasData);
 
     ctxMain.reset();
     ctxMain.putImageData(canvasData, 0, 0);
-
-    // image.close();
   }
 
   // TODO: use coalesced events
