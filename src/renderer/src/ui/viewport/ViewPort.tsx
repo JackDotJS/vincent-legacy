@@ -150,14 +150,27 @@ const ViewPort = (): JSXElement => {
         targets: [
           { format: pformat }
         ]
+      },
+      multisample: {
+        count: 4
       }
+    });
+
+    const ct = ctx.getCurrentTexture();
+
+    const msTex = device.createTexture({
+      format: ct.format,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      size: [ ct.width, ct.height ],
+      sampleCount: 4
     });
 
     const renderpass: GPURenderPassDescriptor = {
       label: `red tri renderpass`,
       colorAttachments: [
         {
-          view: ctx.getCurrentTexture().createView(),
+          view: msTex.createView(),
+          resolveTarget: ct.createView(),
           clearValue: [0, 0, 0, 0],
           loadOp: `clear`,
           storeOp: `store`
