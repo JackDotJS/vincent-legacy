@@ -1,17 +1,32 @@
-// simple red triangle shader
+// triangle shader
+
+struct VertexOutput {
+  @builtin(position) Position : vec4f,
+  @location(0) Color : vec4f
+};
 
 @vertex fn vs(
   @builtin(vertex_index) vertexIndex : u32
-) -> @builtin(position) vec4f {
+) -> VertexOutput {
   let pos = array(
     vec2f( 0.0,  0.5),
     vec2f(-0.5, -0.5),
     vec2f( 0.5, -0.5)
   );
 
-  return vec4f(pos[vertexIndex], 0.0, 1.0);
+  let col = array(
+    vec3f(0.0, 0.0, 1.0),
+    vec3f(1.0, 0.0, 0.0),
+    vec3f(0.0, 1.0, 0.0)
+  );
+
+  var output : VertexOutput;
+  output.Position = vec4f(pos[vertexIndex], 0.0, 1.0);
+  output.Color = vec4f(col[vertexIndex], 1.0);
+
+  return output;
 }
 
-@fragment fn fs() -> @location(0) vec4f {
-  return vec4f(1, 0, 0, 1);
+@fragment fn fs(@location(0) Color : vec4f) -> @location(0) vec4f {
+  return Color;
 }

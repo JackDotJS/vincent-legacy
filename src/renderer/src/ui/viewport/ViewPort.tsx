@@ -100,7 +100,23 @@ const ViewPort = (): JSXElement => {
       setRotation(0);
     });
 
-    // webgpu test
+    // red triangle test (context2d)
+
+    // const ctx = canvasElem.getContext(`2d`);
+    // if (ctx == null) {
+    //   throw new Error(`could not get context 2d`);
+    // }
+
+    // ctx.beginPath();
+    // ctx.fillStyle = `#FF0000`;
+    // ctx.moveTo(canvasElem.width * 0.5, canvasElem.height * 0.25);
+    // ctx.lineTo(canvasElem.width * 0.75, canvasElem.height * 0.75);
+    // ctx.lineTo(canvasElem.width * 0.25, canvasElem.height * 0.75);
+    // ctx.closePath();
+    // ctx.fill();
+
+
+    // red triangle test (webgpu)
 
     const adapter = await navigator.gpu.requestAdapter();
     const device = await adapter?.requestDevice();
@@ -116,7 +132,8 @@ const ViewPort = (): JSXElement => {
     const pformat = navigator.gpu.getPreferredCanvasFormat();
     ctx.configure({
       device,
-      format: pformat
+      format: pformat,
+      alphaMode: `premultiplied`
     });
 
     const module = device.createShaderModule({
@@ -141,7 +158,7 @@ const ViewPort = (): JSXElement => {
       colorAttachments: [
         {
           view: ctx.getCurrentTexture().createView(),
-          clearValue: [0, 0, 0, 1],
+          clearValue: [0, 0, 0, 0],
           loadOp: `clear`,
           storeOp: `store`
         }
