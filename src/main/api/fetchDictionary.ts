@@ -20,6 +20,7 @@ const defaultDictionaryFile = readFileSync(
 const defaultDictionary = JSON.parse(defaultDictionaryFile);
 
 export default async (event: IpcMainInvokeEvent, langCode: string): Promise<object> => {
+  event; // stfu eslint
   // console.debug(event);
 
   const newDictionaryFile = readFileSync(`${localeDir}/${langCode}.json`, { encoding: `utf-8` });
