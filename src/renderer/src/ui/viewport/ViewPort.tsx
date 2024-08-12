@@ -124,6 +124,8 @@ const ViewPort = (): JSXElement => {
       throw new Error(`could not get gpu device`);
     }
 
+    console.debug(adapter, device, await adapter?.requestAdapterInfo());
+
     const ctx = canvasElem.getContext(`webgpu`);
     if (ctx == null) {
       throw new Error(`could not get context webgpu`);
@@ -153,7 +155,10 @@ const ViewPort = (): JSXElement => {
       },
       multisample: {
         count: 4
-      }
+      },
+      // primitive: {
+      //   topology: `line-strip`
+      // }
     });
 
     const ct = ctx.getCurrentTexture();
@@ -171,9 +176,8 @@ const ViewPort = (): JSXElement => {
         {
           view: msTex.createView(),
           resolveTarget: ct.createView(),
-          clearValue: [0, 0, 0, 0],
-          loadOp: `clear`,
-          storeOp: `store`
+          loadOp: `load`,
+          storeOp: `discard`
         }
       ]
     };
@@ -184,7 +188,7 @@ const ViewPort = (): JSXElement => {
 
     const pass = encoder.beginRenderPass(renderpass);
     pass.setPipeline(pipeline);
-    pass.draw(3);
+    pass.draw(6);
     pass.end();
 
     const cbuffer = encoder.finish();

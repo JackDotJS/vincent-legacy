@@ -1,4 +1,4 @@
-// triangle shader
+// quad shader
 
 struct VertexOutput {
   @builtin(position) Position : vec4f,
@@ -9,15 +9,25 @@ struct VertexOutput {
   @builtin(vertex_index) vertexIndex : u32
 ) -> VertexOutput {
   let pos = array(
-    vec2f( 0.0,  0.5),
+    // tri 1
+    vec2f(-0.5,  0.5),
     vec2f(-0.5, -0.5),
+    vec2f( 0.5, -0.5),
+    // tri 2
+    vec2f(-0.5,  0.5),
+    vec2f( 0.5,  0.5),
     vec2f( 0.5, -0.5)
   );
 
   let col = array(
+    // tri 1
     vec3f(0.0, 0.0, 1.0),
     vec3f(1.0, 0.0, 0.0),
-    vec3f(0.0, 1.0, 0.0)
+    vec3f(0.0, 1.0, 0.0),
+    // tri 2
+    vec3f(0.0, 1.0, 0.0),
+    vec3f(1.0, 0.0, 0.0),
+    vec3f(0.0, 0.0, 1.0)
   );
 
   var output : VertexOutput;
