@@ -20,6 +20,9 @@ importers:
       '@solid-primitives/i18n':
         specifier: ^2.1.1
         version: 2.1.1(solid-js@1.8.18)
+      '@tabler/icons-solidjs':
+        specifier: ^3.12.0
+        version: 3.12.0(solid-js@1.8.18)
       deepmerge-ts:
         specifier: ^7.0.3
         version: 7.0.3
@@ -557,6 +560,14 @@ packages:
   '@szmarczak/http-timer@4.0.6':
     resolution: {integrity: sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w==}
     engines: {node: '>=10'}
+
+  '@tabler/icons-solidjs@3.12.0':
+    resolution: {integrity: sha512-oAt0zrzP3+1Idm7kkjbgsXC7RxwwIPmQM3iNZspxnd6AQ1OfggqEntXqiVnX1tfz+4mll/4azYB2tcNYN7FcAQ==}
+    peerDependencies:
+      solid-js: ^1.4.7
+
+  '@tabler/icons@3.12.0':
+    resolution: {integrity: sha512-Im37ar/mQkqLb6XUXsU7nOc4/66VB9/3KLuZ+6tUsJKHHNLaDUkYfCTNG3pnGDI03laByxVf5+umSNK2yPTx8A==}
 
   '@tootallnate/once@2.0.0':
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
@@ -2563,6 +2574,13 @@ snapshots:
   '@szmarczak/http-timer@4.0.6':
     dependencies:
       defer-to-connect: 2.0.1
+
+  '@tabler/icons-solidjs@3.12.0(solid-js@1.8.18)':
+    dependencies:
+      '@tabler/icons': 3.12.0
+      solid-js: 1.8.18
+
+  '@tabler/icons@3.12.0': {}
 
   '@tootallnate/once@2.0.0': {}
 
