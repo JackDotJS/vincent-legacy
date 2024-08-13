@@ -1,11 +1,18 @@
-import { JSXElement, Show, useContext } from 'solid-js';
+import { JSXElement, Show, useContext, ValidComponent } from 'solid-js';
 import style from './DropDown.module.css';
 import { DropDownCollectionContext } from './DropDownCollection';
+import { IconChevronRight } from '@tabler/icons-solidjs';
+import { Dynamic } from 'solid-js/web';
 
-const SubMenu = (props: { label: string, children: JSXElement }): JSXElement => {
+const SubMenu = (props: { 
+  label: string, 
+  children: JSXElement,
+  icon?: ValidComponent, 
+  iconPos?: `left` | `right`,
+}): JSXElement => {
   const { targetElement, setTargetElement } = useContext(DropDownCollectionContext);
+  const finalIconPos = (props.iconPos ?? `left`);
 
-  let testRef!: HTMLSpanElement;
   let buttonRef!: HTMLButtonElement;
 
   const openSubMenu = (): boolean => {
@@ -19,6 +26,17 @@ const SubMenu = (props: { label: string, children: JSXElement }): JSXElement => 
     setTargetElement(buttonRef);
   };
 
+  const labelTypes = {
+    left: <>
+      <Dynamic component={props.icon} size={`1.25rem`} stroke={1.5} />
+      <span class={style.labelText}>{props.label}</span>
+    </>,
+    right: <>
+      <span class={style.labelText}>{props.label}</span>
+      <Dynamic component={props.icon} size={`1.25rem`} stroke={1.5} />
+    </>
+  };
+
   return (
     <>
       <button 
@@ -27,8 +45,10 @@ const SubMenu = (props: { label: string, children: JSXElement }): JSXElement => 
         onClick={() => clickHandler()}
         ref={buttonRef}
       >
-        <span ref={testRef}>{props.label}</span>
-        <span>{`>`}</span>
+        <span class={style.label}>
+          {labelTypes[finalIconPos]}
+        </span>
+        <IconChevronRight size={`1.25rem`}/>
         <Show when={openSubMenu()}>
           <div class={style.dropdownMenu}>
             {props.children}
