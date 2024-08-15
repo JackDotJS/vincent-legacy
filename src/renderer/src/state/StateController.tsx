@@ -6,7 +6,6 @@ import { deepEquals } from "../../../common/deepEquals";
 import { trackDeep } from "@solid-primitives/deep";
 import HistoryController from "./HistoryController";
 import { VincentBaseTool } from '@renderer/api/VincentBaseTool';
-import * as VincentTools from '../tools';
 import './GlobalEventEmitter';
 
 export interface VincentState {
@@ -27,6 +26,7 @@ export interface VincentState {
   gpu: {
     adapter: GPUAdapter | null,
     device: GPUDevice | null
+    canvasFormat: GPUTextureFormat | null
   },
   tools: {
     selected: number,
@@ -56,6 +56,7 @@ export const [ state, setState ] = createStore<VincentState>({
   gpu: {
     adapter: null,
     device: null,
+    canvasFormat: null
   },
   tools: {
     selected: 0,
@@ -99,7 +100,7 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
       window.electron.writeConfig(unwrap(config));
     }, readConfig);
 
-    // load gpu adapter/device
+    // load gpu data
     const adapter = await navigator.gpu.requestAdapter();
     if (adapter == null) {
       throw new Error(`could not get gpu adapter`);
@@ -110,14 +111,18 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
       throw new Error(`could not get gpu device`);
     }
 
+    const cf = navigator.gpu.getPreferredCanvasFormat();
+
     setState(`gpu`, `adapter`, adapter);
     setState(`gpu`, `device`, device);
+    setState(`gpu`, `canvasFormat`, cf);
 
     // load built-in tools
-    const keys = Object.keys(VincentTools);
-    keys.sort((a, b) => b.localeCompare(a));
+    const vincentTools = (await import(`../tools`));
+    const keys = Object.keys(vincentTools);
+    keys.sort((a, b) => a.localeCompare(b));
     for (const key of keys) {
-      const tool = VincentTools[key].default;
+      const tool = vincentTools[key].default;
       setState(`tools`, `list`, (old) => [...old, tool]);
     }
 

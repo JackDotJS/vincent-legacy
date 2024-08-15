@@ -1,13 +1,11 @@
 import { VincentBaseTool } from "@renderer/api/VincentBaseTool";
 import getCursorPositionOnCanvas from "@renderer/util/getCursorPositionOnCanvas";
 import { createSignal, JSXElement } from "solid-js";
-import style from './Paintbrush.module.css';
+import style from './PaintbrushOLD.module.css';
 import { state } from "@renderer/state/StateController";
-// import { commitCanvasChange } from "@renderer/util/commitCanvasChange";
+import { commitCanvasChange } from "@renderer/util/commitCanvasChange";
 
-import shaderCode from './Paintbrush.wgsl?raw';
-
-class PaintbrushTool extends VincentBaseTool {
+class PaintbrushToolOld extends VincentBaseTool {
   drawing = false;
 
   selectionArea: ImageData | null = null;
@@ -15,6 +13,13 @@ class PaintbrushTool extends VincentBaseTool {
   lastPosX = 0;
   lastPosY = 0;
   lastSize = 0;
+
+  bbox = {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0
+  };
 
   cursorElem!: HTMLDivElement;
 
@@ -25,18 +30,9 @@ class PaintbrushTool extends VincentBaseTool {
   getCursorVisible;
   setCursorVisible;
 
-  shaderModule: GPUShaderModule;
-  renderPipeline: GPURenderPipeline;
-  uniformBufferSize =
-    4 * 4 + // color
-    2 * 4 + // scale
-    2 * 4; // position
-  uniformBuffer: GPUBuffer;
-  bindGroup: GPUBindGroup;
-
   constructor() {
     super({
-      name: `paintbrush`,
+      name: `paintbrushold`,
       namespace: `vincent`,
       category: `drawing`
     });
@@ -50,55 +46,39 @@ class PaintbrushTool extends VincentBaseTool {
     this.setBrushColor = setBrushColor;
     this.getCursorVisible = cursorVisible;
     this.setCursorVisible = setCursorVisible;
-
-    const shaderModule = state.gpu.device!.createShaderModule({
-      label: `red tri shader`,
-      code: shaderCode
-    });
-
-    const pipeline = state.gpu.device!.createRenderPipeline({
-      label: `red tri pipeline`,
-      layout: `auto`,
-      vertex: { 
-        module: shaderModule
-      },
-      fragment: { 
-        module: shaderModule,
-        targets: [
-          { 
-            format: state.gpu.canvasFormat!
-          }
-        ]
-      }
-    });
-    
-    const uniformBuffer = state.gpu.device!.createBuffer({
-      label: `paintbrush uniform buffer`,
-      size: this.uniformBufferSize,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-    });
-
-    const bindGroup = state.gpu.device!.createBindGroup({
-      label: `paintbrush bindgroup`,
-      layout: pipeline.getBindGroupLayout(0),
-      entries: [
-        {
-          binding: 0,
-          resource: {
-            buffer: uniformBuffer
-          }
-        }
-      ]
-    });
-    
-    this.shaderModule = shaderModule;
-    this.renderPipeline = pipeline;
-    this.uniformBuffer = uniformBuffer;
-    this.bindGroup = bindGroup;
   }
 
   _startDrawing(ev: PointerEvent): void {
+    const selectCtx = state.canvas.selection!.getContext(`2d`);
+
+    if (selectCtx == null) {
+      throw new Error(`could not get main/selection canvas context2d`);
+    }
+
+    const selectData = selectCtx.getImageData(0, 0, state.canvas.selection!.width, state.canvas.selection!.height);
+
+    let found = false;
+
+    for (const int of selectData.data) {
+      if (int !== 0) {
+        console.debug(`data found`);
+        this.selectionArea = selectData;
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      this.selectionArea = null;
+      console.debug(`no selection data found`);
+    }
+
     const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
+    this.bbox.top = curPos.y;
+    this.bbox.left = curPos.x;
+    this.bbox.right = curPos.x;
+    this.bbox.bottom = curPos.y;
+    
     this.lastPosX = curPos.x;
     this.lastPosY = curPos.y;
 
@@ -110,11 +90,36 @@ class PaintbrushTool extends VincentBaseTool {
     if (!this.drawing) return;
     this.drawing = false;
 
-    // commitCanvasChange();
+    commitCanvasChange();
   }
 
-  // async _masktest(): Promise<void> {
-  // }
+  async _masktest(): Promise<void> {
+    if (this.selectionArea == null) return;
+    const ctxMain = state.canvas.main!.getContext(`2d`);
+    const ctxCommitted = state.canvas.committed!.getContext(`2d`);
+
+    if (ctxMain == null || ctxCommitted == null) {
+      throw new Error(`could not get canvas context2d`);
+    }
+
+    const canvasData = ctxMain.getImageData(0, 0, state.canvas.main!.width, state.canvas.main!.height);
+    const committedData = ctxCommitted.getImageData(0, 0, state.canvas.main!.width, state.canvas.main!.height);
+
+    for (let i = 0; i < this.selectionArea.data.length; i++) {
+      if (canvasData.data[i] !== committedData.data[i]) {
+        const mixMain = Math.min(canvasData.data[i], this.selectionArea.data[i]);
+        const mixCommitted = Math.min(committedData.data[i], 255 - this.selectionArea.data[i]);
+        const added = Math.min(Math.max(mixMain, mixCommitted), mixMain + mixCommitted);
+
+        //const lerp = canvasData.data[i] + (this.selectionArea.data[i] - canvasData.data[i]) * (this.selectionArea.data[i] / 255);
+
+        canvasData.data[i] = added;
+      }
+    }
+
+    ctxMain.reset();
+    ctxMain.putImageData(canvasData, 0, 0);
+  }
 
   // TODO: use coalesced events
   // see: https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent/getCoalescedEvents
@@ -127,14 +132,6 @@ class PaintbrushTool extends VincentBaseTool {
     const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
     let curSize = this.getBrushSize();
 
-    const col = this.getBrushColor() as string;
-    const hexVals = col.substring(1).match(/.{2}/g) ?? [];
-    const rawColors: number[] = [];
-
-    for (const hex of hexVals) {
-      rawColors.push(parseInt(hex, 16) / 255);
-    }
-
     // console.debug(curPos);
 
     // ev.pressure is always either 0 or 0.5 for other pointer types
@@ -143,57 +140,44 @@ class PaintbrushTool extends VincentBaseTool {
       curSize = ev.pressure * this.getBrushSize();
     }
 
+    // console.debug(this.drawing);
+
     if (this.drawing) {
-      const ctx = state.canvas.main!.getContext(`webgpu`);
+      const ctx = state.canvas.main!.getContext(`2d`);
+
       if (ctx == null) {
-        throw new Error(`could not get webgpu context`);
+        throw new Error(`could not get canvas context2d!`);
       }
 
-      const aspect = state.canvas.main!.width / state.canvas.main!.height;
-      const uniformValues = new Float32Array(this.uniformBufferSize / 4);
+      ctx.globalCompositeOperation = `source-over`;
 
-      // set color
-      uniformValues.set([
-        rawColors[0], 
-        rawColors[1], 
-        rawColors[2], 
-        1
-      ], 0);
+      const dx = (this.lastPosX - curPos.x);
+      const dy = (this.lastPosY - curPos.y);
+      const steps = Math.hypot(dx, dy);
 
-      // set scale
-      const temp = curSize / state.canvas.main!.height;
-      uniformValues.set([temp / aspect, temp], 4);
+      for (let i = 1; i < steps; i++) {
+        const stepLengthX = dx * (i / steps);
+        const stepLengthY = dy * (i / steps);
+
+        const mx = this.lastPosX - stepLengthX;
+        const my = this.lastPosY - stepLengthY;
+        const ms = ((this.lastSize) - (curSize)) * (1 - (i / steps)) + (curSize);
+
+        ctx.beginPath();
+        ctx.fillStyle = this.getBrushColor();
+        ctx.arc(mx, my, ms / 2, 0, 2 * Math.PI);
+        ctx.fill();
+      }
       
-      // set position
-      uniformValues.set([curPos.gpuX, curPos.gpuY], 6);
+      // draw end circle
+      ctx.beginPath();
+      ctx.fillStyle = this.getBrushColor();
+      ctx.arc(curPos.x, curPos.y, curSize / 2, 0, 2 * Math.PI);
+      ctx.fill();
 
-      state.gpu.device!.queue.writeBuffer(this.uniformBuffer, 0, uniformValues);
-
-      const currentTexture = ctx.getCurrentTexture();
-
-      const renderpass: GPURenderPassDescriptor = {
-        label: `paintbrush renderpass`,
-        colorAttachments: [
-          {
-            view: currentTexture.createView(),
-            loadOp: `load`,
-            storeOp: `store`
-          }
-        ]
-      };
-
-      const encoder = state.gpu.device!.createCommandEncoder({
-        label: `red tri encoder`
-      });
-
-      const pass = encoder.beginRenderPass(renderpass);
-      pass.setPipeline(this.renderPipeline);
-      pass.setBindGroup(0, this.bindGroup);
-      pass.draw(6);
-      pass.end();
-
-      const cbuffer = encoder.finish();
-      state.gpu.device!.queue.submit([ cbuffer ]);
+      if (this.selectionArea != null) {
+        this._masktest();
+      }
     }
 
     this.lastPosX = curPos.x;
@@ -266,4 +250,4 @@ class PaintbrushTool extends VincentBaseTool {
   }
 }
 
-export default new PaintbrushTool();
+export default new PaintbrushToolOld();

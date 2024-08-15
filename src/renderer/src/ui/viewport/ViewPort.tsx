@@ -120,7 +120,6 @@ const ViewPort = (): JSXElement => {
 
     const adapter = state.gpu.adapter as GPUAdapter;
     const device = state.gpu.device as GPUDevice;
-    const aspect = state.canvas.main!.width / state.canvas.main!.height;
 
     console.debug(adapter, device, await adapter.requestAdapterInfo());
 
@@ -128,105 +127,46 @@ const ViewPort = (): JSXElement => {
     if (ctx == null) {
       throw new Error(`could not get context webgpu`);
     }
-
-    const pformat = navigator.gpu.getPreferredCanvasFormat();
+    
     ctx.configure({
       device,
-      format: pformat,
+      format: state.gpu.canvasFormat!,
       alphaMode: `premultiplied`
     });
 
-    const uniformBufferSize =
-      4 * 4 + // color
-      2 * 4 + // scale
-      2 * 4; // position
-    
-    const uniformBuffer = device.createBuffer({
-      size: uniformBufferSize,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-    });
+    // const ct = ctx.getCurrentTexture();
 
-    const uniformValues = new Float32Array(uniformBufferSize / 4);
+    // const msTex = device.createTexture({
+    //   format: ct.format,
+    //   usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    //   size: [ ct.width, ct.height ],
+    //   sampleCount: 4
+    // });
 
-    // set color
-    uniformValues.set([1, 0, 0, 1], 0);
+    // const renderpass: GPURenderPassDescriptor = {
+    //   label: `red tri renderpass`,
+    //   colorAttachments: [
+    //     {
+    //       view: msTex.createView(),
+    //       resolveTarget: ct.createView(),
+    //       loadOp: `load`,
+    //       storeOp: `discard`
+    //     }
+    //   ]
+    // };
 
-    // set scale
-    uniformValues.set([0.5 / aspect, 0.5], 4);
-    
-    // set position
-    uniformValues.set([0, 0], 6);
+    // const encoder = device.createCommandEncoder({
+    //   label: `red tri encoder`
+    // });
 
-    device.queue.writeBuffer(uniformBuffer, 0, uniformValues);
+    // const pass = encoder.beginRenderPass(renderpass);
+    // pass.setPipeline(pipeline);
+    // pass.setBindGroup(0, bindGroup);
+    // pass.draw(6);
+    // pass.end();
 
-    const module = device.createShaderModule({
-      label: `red tri shader`,
-      code: (await import(`./test.wgsl?raw`)).default
-    });
-
-    const pipeline = device.createRenderPipeline({
-      label: `red tri pipeline`,
-      layout: `auto`,
-      vertex: { module },
-      fragment: { 
-        module,
-        targets: [
-          { format: pformat }
-        ]
-      },
-      multisample: {
-        count: 4
-      },
-      // primitive: {
-      //   topology: `line-strip`
-      // }
-    });
-
-    const bindGroup = device.createBindGroup({
-      layout: pipeline.getBindGroupLayout(0),
-      entries: [
-        {
-          binding: 0,
-          resource: {
-            buffer: uniformBuffer
-          }
-        }
-      ]
-    });
-
-    const ct = ctx.getCurrentTexture();
-
-    const msTex = device.createTexture({
-      format: ct.format,
-      usage: GPUTextureUsage.RENDER_ATTACHMENT,
-      size: [ ct.width, ct.height ],
-      sampleCount: 4
-    });
-
-    const renderpass: GPURenderPassDescriptor = {
-      label: `red tri renderpass`,
-      colorAttachments: [
-        {
-          view: msTex.createView(),
-          resolveTarget: ct.createView(),
-          loadOp: `load`,
-          storeOp: `discard`
-        }
-      ]
-    };
-
-    const encoder = device.createCommandEncoder({
-      label: `red tri encoder`
-    });
-
-    const pass = encoder.beginRenderPass(renderpass);
-    pass.setPipeline(pipeline);
-    pass.setBindGroup(0, bindGroup);
-    pass.draw(6);
-    pass.end();
-
-    const cbuffer = encoder.finish();
-    device.queue.submit([ cbuffer ]);
+    // const cbuffer = encoder.finish();
+    // device.queue.submit([ cbuffer ]);
   });
 
   createEffect(() => {

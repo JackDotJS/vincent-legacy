@@ -37,7 +37,7 @@ fn vs(
 
 fn circle(uv: vec2f, radius: f32) -> f32 {
   return 1.0 - smoothstep(
-    1 - (0.02),
+    1,
     radius,
     dot(uv, uv)
   );
@@ -45,10 +45,17 @@ fn circle(uv: vec2f, radius: f32) -> f32 {
 
 @fragment 
 fn fs(vsOutput: VertexOutput) -> @location(0) vec4f {
+  if (input.color[3] == 0) { discard; }
+
   let ellipseMask = circle(vsOutput.texcoord, 1.0);
 
   if (ellipseMask == 0) { discard; }
 
   let alpha = input.color[3] * ellipseMask;
-  return vec4f(input.color[0], input.color[1], input.color[2], alpha);
+  return vec4f(
+    input.color[0] * alpha, 
+    input.color[1] * alpha, 
+    input.color[2] * alpha, 
+    alpha
+  );
 }
