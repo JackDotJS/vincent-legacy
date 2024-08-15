@@ -24,6 +24,10 @@ export interface VincentState {
     wrapper: HTMLDivElement | null,
     scale: number
   },
+  gpu: {
+    adapter: GPUAdapter | null,
+    device: GPUDevice | null
+  },
   tools: {
     selected: number,
     list: VincentBaseTool[]
@@ -48,6 +52,10 @@ export const [ state, setState ] = createStore<VincentState>({
     committedSelection: new OffscreenCanvas(600,400),
     wrapper: null,
     scale: 1
+  },
+  gpu: {
+    adapter: null,
+    device: null,
   },
   tools: {
     selected: 0,
@@ -91,6 +99,20 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
       window.electron.writeConfig(unwrap(config));
     }, readConfig);
 
+    // load gpu adapter/device
+    const adapter = await navigator.gpu.requestAdapter();
+    if (adapter == null) {
+      throw new Error(`could not get gpu adapter`);
+    }
+
+    const device = await adapter.requestDevice();
+    if (device == null) {
+      throw new Error(`could not get gpu device`);
+    }
+
+    setState(`gpu`, `adapter`, adapter);
+    setState(`gpu`, `device`, device);
+
     // load built-in tools
     const keys = Object.keys(VincentTools);
     keys.sort((a, b) => b.localeCompare(a));
@@ -101,6 +123,7 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
 
     console.debug(state.tools);
 
+    // load misc modules
     import(`./StateEventListeners`);
     import(`./HistoryController`);
 

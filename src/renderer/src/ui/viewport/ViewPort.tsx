@@ -118,13 +118,11 @@ const ViewPort = (): JSXElement => {
 
     // red triangle test (webgpu)
 
-    const adapter = await navigator.gpu.requestAdapter();
-    const device = await adapter?.requestDevice();
-    if (device == null) {
-      throw new Error(`could not get gpu device`);
-    }
+    const adapter = state.gpu.adapter as GPUAdapter;
+    const device = state.gpu.device as GPUDevice;
+    const aspect = state.canvas.main!.width / state.canvas.main!.height;
 
-    console.debug(adapter, device, await adapter?.requestAdapterInfo());
+    console.debug(adapter, device, await adapter.requestAdapterInfo());
 
     const ctx = canvasElem.getContext(`webgpu`);
     if (ctx == null) {
@@ -137,6 +135,29 @@ const ViewPort = (): JSXElement => {
       format: pformat,
       alphaMode: `premultiplied`
     });
+
+    const uniformBufferSize =
+      4 * 4 + // color
+      2 * 4 + // scale
+      2 * 4; // position
+    
+    const uniformBuffer = device.createBuffer({
+      size: uniformBufferSize,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+
+    const uniformValues = new Float32Array(uniformBufferSize / 4);
+
+    // set color
+    uniformValues.set([1, 0, 0, 1], 0);
+
+    // set scale
+    uniformValues.set([0.5 / aspect, 0.5], 4);
+    
+    // set position
+    uniformValues.set([0, 0], 6);
+
+    device.queue.writeBuffer(uniformBuffer, 0, uniformValues);
 
     const module = device.createShaderModule({
       label: `red tri shader`,
@@ -159,6 +180,18 @@ const ViewPort = (): JSXElement => {
       // primitive: {
       //   topology: `line-strip`
       // }
+    });
+
+    const bindGroup = device.createBindGroup({
+      layout: pipeline.getBindGroupLayout(0),
+      entries: [
+        {
+          binding: 0,
+          resource: {
+            buffer: uniformBuffer
+          }
+        }
+      ]
     });
 
     const ct = ctx.getCurrentTexture();
@@ -188,6 +221,7 @@ const ViewPort = (): JSXElement => {
 
     const pass = encoder.beginRenderPass(renderpass);
     pass.setPipeline(pipeline);
+    pass.setBindGroup(0, bindGroup);
     pass.draw(6);
     pass.end();
 
