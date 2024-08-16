@@ -117,29 +117,32 @@ const ViewPort = (): JSXElement => {
 
 
     // webgpu test
+    const adapter = state.gpu.adapter as GPUAdapter;
+    const device = state.gpu.device as GPUDevice;
 
-    // const adapter = state.gpu.adapter as GPUAdapter;
-    // const device = state.gpu.device as GPUDevice;
+    console.debug(adapter, device, await adapter.requestAdapterInfo());
 
-    // console.debug(adapter, device, await adapter.requestAdapterInfo());
-
-    // const ctx = canvasElem.getContext(`webgpu`);
-    // if (ctx == null) {
-    //   throw new Error(`could not get context webgpu`);
-    // }
+    const ctx = canvasElem.getContext(`webgpu`);
+    if (ctx == null) {
+      throw new Error(`could not get context webgpu`);
+    }
     
-    // ctx.configure({
-    //   device,
-    //   format: state.gpu.canvasFormat!,
-    //   alphaMode: `premultiplied`
-    // });
+    ctx.configure({
+      device,
+      format: state.gpu.canvasFormat!,
+      alphaMode: `premultiplied`,
+      usage: 
+        GPUTextureUsage.TEXTURE_BINDING | 
+        GPUTextureUsage.STORAGE_BINDING |
+        GPUTextureUsage.RENDER_ATTACHMENT
+    });
 
     // initalize canvases with webgl
-    const ctx = canvasElem.getContext(`webgl2`);
-    const ctx2 = selectionCanvasElem.getContext(`webgl2`);
-    if (ctx == null || ctx2 == null) {
-      throw new Error(`could not get webgl context`);
-    }
+    // const ctx = canvasElem.getContext(`webgl2`);
+    // const ctx2 = selectionCanvasElem.getContext(`webgl2`);
+    // if (ctx == null || ctx2 == null) {
+    //   throw new Error(`could not get webgl context`);
+    // }
   });
 
   createEffect(() => {

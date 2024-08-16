@@ -106,12 +106,17 @@ export const StateController = (props: { children?: JSXElement }): JSXElement =>
       throw new Error(`could not get gpu adapter`);
     }
 
-    const device = await adapter.requestDevice();
+    const hasBgra = adapter.features.has(`bgra8unorm-storage`);
+    const device = await adapter.requestDevice({
+      requiredFeatures: hasBgra ? [`bgra8unorm-storage`] : []
+    });
     if (device == null) {
       throw new Error(`could not get gpu device`);
     }
 
-    const cf = navigator.gpu.getPreferredCanvasFormat();
+    const cf = hasBgra
+      ? navigator.gpu.getPreferredCanvasFormat()
+      : `rgba8unorm`;
 
     setState(`gpu`, `adapter`, adapter);
     setState(`gpu`, `device`, device);

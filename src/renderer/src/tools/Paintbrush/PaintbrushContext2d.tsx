@@ -5,7 +5,7 @@ import style from './PaintbrushOLD.module.css';
 import { state } from "@renderer/state/StateController";
 import { commitCanvasChange } from "@renderer/util/commitCanvasChange";
 
-class PaintbrushToolOld extends VincentBaseTool {
+class PaintbrushTool extends VincentBaseTool {
   drawing = false;
 
   selectionArea: ImageData | null = null;
@@ -250,4 +250,4 @@ class PaintbrushToolOld extends VincentBaseTool {
   }
 }
 
-export default new PaintbrushToolOld();
+export default new PaintbrushTool();

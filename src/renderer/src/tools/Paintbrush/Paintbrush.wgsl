@@ -12,6 +12,7 @@ struct VertexOutput {
 };
 
 @group(0) @binding(0) var<uniform> input: ShaderInput;
+@group(0) @binding(0) var canvasOutput: texture_storage_2d<rgba8unorm, read_write>;
 
 @vertex 
 fn vs(
@@ -37,7 +38,7 @@ fn vs(
 
 fn circle(uv: vec2f, radius: f32) -> f32 {
   return 1.0 - smoothstep(
-    1,
+    0.5,
     radius,
     dot(uv, uv)
   );
