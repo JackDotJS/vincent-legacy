@@ -5,8 +5,7 @@ import style from './Paintbrush.module.css';
 import { state } from "@renderer/state/StateController";
 // import { commitCanvasChange } from "@renderer/util/commitCanvasChange";
 
-import vertexShaderCode from './Paintbrush.vert?raw';
-import fragmentShaderCode from './Paintbrush.frag?raw';
+import shaderCode from './Paintbrush.wgsl?raw';
 
 class PaintbrushTool extends VincentBaseTool {
   drawing = false;
@@ -26,6 +25,15 @@ class PaintbrushTool extends VincentBaseTool {
   getCursorVisible;
   setCursorVisible;
 
+  shaderModule: GPUShaderModule;
+  renderPipeline: GPURenderPipeline;
+  uniformBufferSize =
+    4 * 4 + // color
+    2 * 4 + // scale
+    2 * 4; // position
+  uniformBuffer: GPUBuffer;
+  bindGroup: GPUBindGroup;
+
   constructor() {
     super({
       name: `paintbrush`,
@@ -42,6 +50,51 @@ class PaintbrushTool extends VincentBaseTool {
     this.setBrushColor = setBrushColor;
     this.getCursorVisible = cursorVisible;
     this.setCursorVisible = setCursorVisible;
+
+    const shaderModule = state.gpu.device!.createShaderModule({
+      label: `red tri shader`,
+      code: shaderCode
+    });
+
+    const pipeline = state.gpu.device!.createRenderPipeline({
+      label: `red tri pipeline`,
+      layout: `auto`,
+      vertex: { 
+        module: shaderModule
+      },
+      fragment: { 
+        module: shaderModule,
+        targets: [
+          { 
+            format: state.gpu.canvasFormat!
+          }
+        ]
+      }
+    });
+    
+    const uniformBuffer = state.gpu.device!.createBuffer({
+      label: `paintbrush uniform buffer`,
+      size: this.uniformBufferSize,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+
+    const bindGroup = state.gpu.device!.createBindGroup({
+      label: `paintbrush bindgroup`,
+      layout: pipeline.getBindGroupLayout(0),
+      entries: [
+        {
+          binding: 0,
+          resource: {
+            buffer: uniformBuffer
+          }
+        }
+      ]
+    });
+    
+    this.shaderModule = shaderModule;
+    this.renderPipeline = pipeline;
+    this.uniformBuffer = uniformBuffer;
+    this.bindGroup = bindGroup;
   }
 
   _startDrawing(ev: PointerEvent): void {
@@ -74,6 +127,14 @@ class PaintbrushTool extends VincentBaseTool {
     const curPos = getCursorPositionOnCanvas(ev.pageX,  ev.pageY);
     let curSize = this.getBrushSize();
 
+    const col = this.getBrushColor() as string;
+    const hexVals = col.substring(1).match(/.{2}/g) ?? [];
+    const rawColors: number[] = [];
+
+    for (const hex of hexVals) {
+      rawColors.push(parseInt(hex, 16) / 255);
+    }
+
     // console.debug(curPos);
 
     // ev.pressure is always either 0 or 0.5 for other pointer types
@@ -83,101 +144,56 @@ class PaintbrushTool extends VincentBaseTool {
     }
 
     if (this.drawing) {
-      const gl = state.canvas.main!.getContext(`webgl2`);
-      if (gl == null) {
-        throw new Error(`could not get webgl context`);
+      const ctx = state.canvas.main!.getContext(`webgpu`);
+      if (ctx == null) {
+        throw new Error(`could not get webgpu context`);
       }
 
       const aspect = state.canvas.main!.width / state.canvas.main!.height;
+      const uniformValues = new Float32Array(this.uniformBufferSize / 4);
 
-      // mesh vertices
-      const vertices: number[] = [
-        // tri 1
-        -1, 1, 0,
-        -1, -1, 0,
-        1, -1, 0,
-        // tri 2
-        -1, 1, 0,
-        1, 1, 0,
-        1, -1, 0
-      ];
+      // set color
+      uniformValues.set([
+        rawColors[0], 
+        rawColors[1], 
+        rawColors[2], 
+        1
+      ], 0);
 
-      const texcoord: number[] = [];
-
-      // apply scale and position to vertices
-      for (let i = 0; i < vertices.length; i++) {
-        if (i % 3 === 2) continue;
-
-        texcoord.push(vertices[i]);
-
-        const size = curSize / state.canvas.main!.height;
-
-        if (i % 3 === 0) {
-          // x
-          vertices[i] *= size / aspect;
-          vertices[i] += curPos.gpuX;
-        } else {
-          // y
-          vertices[i] *= size;
-          vertices[i] += curPos.gpuY;
-        }
-      }
-
-      // color
-      const col = this.getBrushColor() as string;
-      const hexVals = col.substring(1).match(/.{2}/g) ?? [];
-      const rawColor: number[] = [];
-      for (const hex of hexVals) {
-        rawColor.push(parseInt(hex, 16) / 255);
-      }
+      // set scale
+      const temp = curSize / state.canvas.main!.height;
+      uniformValues.set([temp / aspect, temp], 4);
       
-      rawColor.push(1.0); // opacity
+      // set position
+      uniformValues.set([curPos.gpuX, curPos.gpuY], 6);
 
-      gl.blendFunc(gl.ONE, gl.ONE);
-  
-      const positionBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+      state.gpu.device!.queue.writeBuffer(this.uniformBuffer, 0, uniformValues);
 
-      const colorBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rawColor), gl.STATIC_DRAW);
+      const currentTexture = ctx.getCurrentTexture();
 
-      const uvBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texcoord), gl.STATIC_DRAW);
+      const renderpass: GPURenderPassDescriptor = {
+        label: `paintbrush renderpass`,
+        colorAttachments: [
+          {
+            view: currentTexture.createView(),
+            loadOp: `load`,
+            storeOp: `store`
+          }
+        ]
+      };
 
-      const vs = gl.createShader(gl.VERTEX_SHADER) as WebGLShader;
-      gl.shaderSource(vs, vertexShaderCode);
-      gl.compileShader(vs);
+      const encoder = state.gpu.device!.createCommandEncoder({
+        label: `red tri encoder`
+      });
 
-      const fs = gl.createShader(gl.FRAGMENT_SHADER) as WebGLShader;
-      gl.shaderSource(fs, fragmentShaderCode);
-      gl.compileShader(fs);
+      const pass = encoder.beginRenderPass(renderpass);
+      pass.setPipeline(this.renderPipeline);
+      pass.setBindGroup(0, this.bindGroup);
+      pass.draw(6);
+      pass.end();
 
-      const program = gl.createProgram() as WebGLProgram;
-      gl.attachShader(program, vs);
-      gl.attachShader(program, fs);
-
-      gl.linkProgram(program);
-
-      const positionLocation = gl.getAttribLocation(program, `position`);
-      gl.enableVertexAttribArray(positionLocation);
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
-
-      const colorLocation = gl.getAttribLocation(program, `color`);
-      gl.enableVertexAttribArray(colorLocation);
-      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-      gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
-
-      const uvLocation = gl.getAttribLocation(program, `uv`);
-      gl.enableVertexAttribArray(uvLocation);
-      gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-      gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 0, 0);
-
-      gl.useProgram(program);
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      const cbuffer = encoder.finish();
+      state.gpu.device!.queue.submit([ cbuffer ]);
     }
 
     this.lastPosX = curPos.x;

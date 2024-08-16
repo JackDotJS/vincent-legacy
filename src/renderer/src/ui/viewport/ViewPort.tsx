@@ -116,57 +116,30 @@ const ViewPort = (): JSXElement => {
     // ctx.fill();
 
 
-    // red triangle test (webgpu)
+    // webgpu test
 
-    const adapter = state.gpu.adapter as GPUAdapter;
-    const device = state.gpu.device as GPUDevice;
+    // const adapter = state.gpu.adapter as GPUAdapter;
+    // const device = state.gpu.device as GPUDevice;
 
-    console.debug(adapter, device, await adapter.requestAdapterInfo());
+    // console.debug(adapter, device, await adapter.requestAdapterInfo());
 
-    const ctx = canvasElem.getContext(`webgpu`);
-    if (ctx == null) {
-      throw new Error(`could not get context webgpu`);
-    }
+    // const ctx = canvasElem.getContext(`webgpu`);
+    // if (ctx == null) {
+    //   throw new Error(`could not get context webgpu`);
+    // }
     
-    ctx.configure({
-      device,
-      format: state.gpu.canvasFormat!,
-      alphaMode: `premultiplied`
-    });
-
-    // const ct = ctx.getCurrentTexture();
-
-    // const msTex = device.createTexture({
-    //   format: ct.format,
-    //   usage: GPUTextureUsage.RENDER_ATTACHMENT,
-    //   size: [ ct.width, ct.height ],
-    //   sampleCount: 4
+    // ctx.configure({
+    //   device,
+    //   format: state.gpu.canvasFormat!,
+    //   alphaMode: `premultiplied`
     // });
 
-    // const renderpass: GPURenderPassDescriptor = {
-    //   label: `red tri renderpass`,
-    //   colorAttachments: [
-    //     {
-    //       view: msTex.createView(),
-    //       resolveTarget: ct.createView(),
-    //       loadOp: `load`,
-    //       storeOp: `discard`
-    //     }
-    //   ]
-    // };
-
-    // const encoder = device.createCommandEncoder({
-    //   label: `red tri encoder`
-    // });
-
-    // const pass = encoder.beginRenderPass(renderpass);
-    // pass.setPipeline(pipeline);
-    // pass.setBindGroup(0, bindGroup);
-    // pass.draw(6);
-    // pass.end();
-
-    // const cbuffer = encoder.finish();
-    // device.queue.submit([ cbuffer ]);
+    // initalize canvases with webgl
+    const ctx = canvasElem.getContext(`webgl2`);
+    const ctx2 = selectionCanvasElem.getContext(`webgl2`);
+    if (ctx == null || ctx2 == null) {
+      throw new Error(`could not get webgl context`);
+    }
   });
 
   createEffect(() => {
