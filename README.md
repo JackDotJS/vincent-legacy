@@ -1,6 +1,6 @@
 # Vincent
 
-<img src="https://raw.githubusercontent.com/JackDotJS/vincent/main/resources/icon.png" align="right" height="150px">
+<img src="https://raw.githubusercontent.com/JackDotJS/vincent-legacy/main/resources/icon.png" align="right" height="150px">
 
 A simple, modern, cross-platform image editor.
 
@@ -8,11 +8,11 @@ A simple, modern, cross-platform image editor.
 <a href="https://www.solidjs.com/"><img src="https://img.shields.io/badge/SolidJS-335d92?style=for-the-badge&logo=solid" alt="SolidJS" /></a>
 <a href="https://www.electronjs.org/"><img src="https://img.shields.io/badge/Electron-1b1c26?style=for-the-badge&logoColor=9feaf9&logo=electron" alt="Electron" /></a>
 
-<a href="../../releases"><img src="https://img.shields.io/github/downloads/JackDotJS/vincent/total?style=for-the-badge" alt="Downloads" /></a>
-<a href="../../actions/workflows/dist-snapshot.yml"><img src="https://img.shields.io/github/actions/workflow/status/JackDotJS/vincent/dist-snapshot.yml?branch=main&label=SNAPSHOT%20BUILDS&style=for-the-badge" alt="Snapshots" /></a>
+<a href="../../releases"><img src="https://img.shields.io/github/downloads/JackDotJS/vincent-legacy/total?style=for-the-badge" alt="Downloads" /></a>
+<a href="../../actions/workflows/dist-snapshot.yml"><img src="https://img.shields.io/github/actions/workflow/status/JackDotJS/vincent-legacy/dist-snapshot.yml?branch=main&label=SNAPSHOT%20BUILDS&style=for-the-badge" alt="Snapshots" /></a>
 
 <a href="https://discord.gg/s5nQBxFPp2"><img src="https://img.shields.io/discord/803584639541313577?label=Chat&color=5865F2&logo=discord&logoColor=ffffff&style=for-the-badge" alt="Discord" /></a>
-<a href="../../discussions"><img src="https://img.shields.io/github/discussions/JackDotJS/vincent?label=Discussions&color=1B1F24&logo=github&logoColor=ffffff&style=for-the-badge" alt="GitHub Discussions" /></a>
+<a href="../../discussions"><img src="https://img.shields.io/github/discussions/JackDotJS/vincent-legacy?label=Discussions&color=1B1F24&logo=github&logoColor=ffffff&style=for-the-badge" alt="GitHub Discussions" /></a>
 
 ## Development Status
 
